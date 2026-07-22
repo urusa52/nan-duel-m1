@@ -270,3 +270,19 @@ body {
 .tut-ex-cards { display: flex; gap: 3px; }
 .tut-ex-label { font-size: .58rem; color: var(--paper-dim); text-align: center; line-height: 1.3; max-width: 96px; }
 .tut-ex-plus { align-self: center; color: var(--gold); font-size: 1rem; padding: 0 1px; }
+
+/* ① 상대 텐파이 경고 */
+.zone-head-right { display: inline-flex; align-items: center; gap: 6px; }
+.ai-warn { font-size: 0; }
+.ai-warn.on {
+  font-size: .68rem;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: 10px;
+  padding: 2px 8px;
+  background: rgba(176, 65, 62, .12);
+  animation: warn-pulse 1.1s ease infinite alternate;
+}
+@keyframes warn-pulse { from { opacity: .65; } to { opacity: 1; } }
+/* 상대가 텐파이면 상대 영역 전체를 살짝 물들여 시선을 끈다 */
+.ai-zone.danger .hand-row.backs { box-shadow: 0 0 0 1px var(--danger); border-radius: 6px; padding: 3px; }

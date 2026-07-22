@@ -2,7 +2,7 @@
 import { getState, setState, subscribe } from './core/store.js';
 import { on } from './core/eventBus.js';
 import { makeRng, buildWall, shuffle } from './logic/wall.js';
-import { makeCardMap, makeBondSet } from './logic/handEval.js';
+import { makeCardMap, makeBondSet, waitsFor } from './logic/handEval.js';
 import { makeYakuEvaluator } from './logic/yakuEval.js';
 import {
   P, A, newRound, drawStep, tsumoCheck, declareTsumo,
@@ -35,10 +35,11 @@ async function boot() {
   const allCardIds = cardsData.cards.map((c) => c.id);
   const rules = { allowCrossGenreRun: true, minYakuToDeclare: 1, ...(cfg.rules || {}) };
   const evalHand = makeYakuEvaluator(yakuData, cardMap, bondSet, rules);
-  const deps = { cardMap, bondSet, allCardIds, evalHand, rules };
+  const declEval = (h) => { const b = evalHand(h); return b && b.declarable ? b : null; };
+  const deps = { cardMap, bondSet, allCardIds, evalHand, rules, waitsFor, declEval };
   const dataBundle = { cfg, cardsData, bondsData, cardMap };
 
-  initTable(dataBundle);
+  initTable(dataBundle, deps);
   initHandUI(dataBundle, deps);
   initCutin(dataBundle);
   initHud();

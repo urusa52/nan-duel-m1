@@ -12,9 +12,11 @@ function buildStageGlyph() {
 
 let refs = null;
 let data = null;
+let deps = null;
 
-export function initTable(dataBundle) {
+export function initTable(dataBundle, logicDeps) {
   data = dataBundle; // { cardsData, cardMap, cfg }
+  deps = logicDeps;  // { bondSet, allCardIds, evalHand, rules } — 상대 텐파이 판정용
   buildStageGlyph();
   refs = {
     aiHand: document.getElementById('ai-hand'),
@@ -23,6 +25,7 @@ export function initTable(dataBundle) {
     wallCount: document.getElementById('wall-count'),
     turnBadge: document.getElementById('turn-badge'),
     countPanel: document.getElementById('count-panel'),
+    aiWarn: document.getElementById('ai-warn'),
   };
 }
 
@@ -60,6 +63,8 @@ export function renderTable(s) {
     refs.aiHand.appendChild(b);
   }
 
+  renderAiWarning(s);
+
   // 버림패 (공개 — 수읽기의 재료)
   renderDiscards(refs.aiDiscards, round.discards.ai, s);
   renderDiscards(refs.myDiscards, round.discards.player, s);
@@ -74,6 +79,46 @@ export function renderTable(s) {
   refs.turnBadge.className = 'turn-badge' + (mine ? ' mine' : '');
 
   renderCountPanel(s);
+}
+
+// ① 상대 텐파이 경고 (D40): AI 손패가 실제로 텐파이면 상단에 신호.
+// config.showOpponentTenpai=false면 끈다 (고수/난이도 옵션 대비).
+// 상대 손패는 비공개지만, 초보 접근성을 위해 게임이 대신 읽어준다.
+function renderAiWarning(s) {
+  const box = refs.aiWarn;
+  if (!box) return;
+  const round = s.round;
+  const on = data.cfg.showOpponentTenpai !== false;
+  if (!on || round.phase === 'ended' || !deps) { box.className = 'ai-warn'; box.textContent = ''; return; }
+
+  // AI 손패 기준 텐파이 판정: 7장이면 그대로, 8장(자기 결정 직전)이면 버림 후보 중
+  // 하나라도 텐파이가 되는지 본다. 대기 종수도 함께 계산.
+  const hand = round.hands.ai;
+  let waitKinds = 0;
+  if (hand.length === 7) {
+    waitKinds = deps.waitsFor(hand, data.cardMap, deps.bondSet, deps.allCardIds, deps.declEval, deps.rules).length;
+  } else if (hand.length === 8) {
+    const tried = new Set();
+    for (let i = 0; i < hand.length; i++) {
+      if (tried.has(hand[i])) continue;
+      tried.add(hand[i]);
+      const h7 = hand.slice(0, i).concat(hand.slice(i + 1));
+      const w = deps.waitsFor(h7, data.cardMap, deps.bondSet, deps.allCardIds, deps.declEval, deps.rules);
+      if (w.length > waitKinds) waitKinds = w.length;
+    }
+  }
+
+  if (waitKinds > 0) {
+    box.className = 'ai-warn on';
+    box.textContent = '완성 임박 · 대기 ' + waitKinds + '종';
+    const zone = document.querySelector('.ai-zone');
+    if (zone) zone.classList.add('danger');
+  } else {
+    box.className = 'ai-warn';
+    box.textContent = '';
+    const zone = document.querySelector('.ai-zone');
+    if (zone) zone.classList.remove('danger');
+  }
 }
 
 function renderDiscards(container, ids, s) {

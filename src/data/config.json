@@ -16,5 +16,6 @@
   "rules": {
     "allowCrossGenreRun": false,
     "minYakuToDeclare": 2
-  }
+  },
+  "showOpponentTenpai": true
 }

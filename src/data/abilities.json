@@ -5,22 +5,22 @@
       "id": "foresight",
       "name": "예언서",
       "kind": "info",
-      "timing": "beforeDraw",
+      "timing": "decide",
       "desc": "산 위 3장을 나만 미리 본다 (판은 안 바뀜)"
     },
     {
       "id": "adapt",
       "name": "각색",
       "kind": "handMutate",
-      "timing": "beforeDiscard",
+      "timing": "decide",
       "desc": "손패 한 장의 장르를 바꾼다 (단계는 유지)"
     },
     {
       "id": "foreshadow",
       "name": "복선",
       "kind": "drawReplace",
-      "timing": "insteadOfDraw",
-      "desc": "내 버림패에서 한 장을 손으로 회수한다 (뽑기 대신)"
+      "timing": "decide",
+      "desc": "뽑은 카드를 무르고 내 버림패에서 한 장을 회수한다"
     }
   ]
 }

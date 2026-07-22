@@ -3,11 +3,13 @@
 
 import { waitsFor } from '../logic/handEval.js';
 import { unseenCounts } from '../logic/wall.js';
+import { formedSets, reachableYaku } from '../logic/analysis.js';
 import { cardEl, genreName, stageName } from './table.js';
 
 let refs = null;
 let data = null;
 let deps = null;
+let ctx = null; // '맞출 수 있는 패' 분석 컨텍스트
 
 // 선언 가능(최소 역 충족) 해석만 인정하는 평가 래퍼
 function declEval(hand) {
@@ -18,6 +20,10 @@ function declEval(hand) {
 export function initHandUI(dataBundle, logicDeps) {
   data = dataBundle;
   deps = logicDeps;
+  ctx = {
+    cardMap: deps.cardMap, bondSet: deps.bondSet,
+    genres: data.cardsData.genres, yakuData: data.yakuData, rules: deps.rules,
+  };
   refs = {
     myHand: document.getElementById('my-hand'),
     assist: document.getElementById('assist'),
@@ -76,60 +82,63 @@ function renderCardInfo(s) {
     (bond ? '  【인연: ' + bond.title + '】' : '');
 }
 
-// 자동 판정 패널: 8장이면 선언 가능 여부, 7장이면 텐파이·대기 표시
+// 왼쪽 '맞출 수 있는 패' 패널: 지금 성립 중인 세트 + 상황 힌트 + 노려볼 역.
+// 텐파이가 아니어도 항상 내용이 있다 (게임 판정과 무관한 표시).
 function renderAssist(s) {
   const round = s.round;
   const hand = round.hands.player;
   const box = refs.assist;
-
   if (round.phase === 'ended') { box.innerHTML = ''; return; }
 
+  let html = '<div class="cp-k">지금 성립 중</div>';
+  const sets = formedSets(hand, ctx);
+  html += sets.length
+    ? sets.map((tx) => '<div class="cp-li ok">✓ ' + tx + '</div>').join('')
+    : '<div class="cp-li dim">아직 없음</div>';
+
+  html += situationHint(s); // 완성/텐파이/버리면 텐파이 (.assist-* 클래스 유지)
+
+  const yk = reachableYaku(hand, ctx);
+  html += '<div class="cp-k">노려볼 역</div>';
+  html += yk.length
+    ? yk.map((y) => '<div class="cp-li">' + y.name + ' <span class="cp-pt">' + y.score + '점</span></div>').join('')
+    : '<div class="cp-li dim">—</div>';
+
+  box.innerHTML = html;
+}
+
+// 상황 힌트 — 튜토리얼 코치가 .assist-declare / .assist-tenpai 를 참조하므로 클래스 유지.
+function situationHint(s) {
+  const round = s.round;
+  const hand = round.hands.player;
   if (hand.length === 8) {
     const best = deps.evalHand(hand);
     if (best && best.declarable) {
-      box.innerHTML =
-        '<div class="assist-declare">완성! ' +
-        best.yaku.map((y) => y.name).join(' + ') +
+      return '<div class="assist-declare">완성! ' + best.yaku.map((y) => y.name).join(' + ') +
         ' — <b>' + best.score + '점</b></div>';
-      return;
     }
-    // 미완성 8장: 어떤 카드를 버리면 텐파이인지 힌트
-    const tenpaiDiscards = [];
+    let bd = null;
     const tried = new Set();
     for (let i = 0; i < hand.length; i++) {
       if (tried.has(hand[i])) continue;
       tried.add(hand[i]);
       const h7 = hand.slice(0, i).concat(hand.slice(i + 1));
       const w = waitsFor(h7, deps.cardMap, deps.bondSet, deps.allCardIds, declEval, deps.rules);
-      if (w.length > 0) tenpaiDiscards.push({ discard: hand[i], waits: w });
+      if (w.length && (!bd || w.length > bd.n)) bd = { id: hand[i], n: w.length };
     }
-    if (tenpaiDiscards.length > 0) {
-      const b = tenpaiDiscards.sort((x, y) => y.waits.length - x.waits.length)[0];
-      const c = data.cardMap[b.discard];
-      box.innerHTML =
-        '<div class="assist-hint">「' + c.name + '」을(를) 버리면 <b>텐파이</b> — 대기 ' +
-        b.waits.length + '종</div>';
-    } else {
-      box.innerHTML = '<div class="assist-dim">버릴 카드를 고르세요</div>';
-    }
-    return;
+    if (bd) return '<div class="assist-hint">「' + data.cardMap[bd.id].name + '」 버리면 <b>텐파이</b></div>';
+    return '';
   }
-
-  // 손패 7장 (상대 차례 등): 텐파이면 대기 카드와 남은 장수 표시
   const waits = waitsFor(hand, deps.cardMap, deps.bondSet, deps.allCardIds, declEval, deps.rules);
-  if (waits.length === 0) { box.innerHTML = ''; return; }
+  if (!waits.length) return '';
   const visible = [...hand, ...round.discards.player, ...round.discards.ai];
-  const counts = unseenCounts(
-    data.cardsData.cards.map((c) => c.id), data.cfg.copiesPerCard, visible
-  );
+  const counts = unseenCounts(data.cardsData.cards.map((c) => c.id), data.cfg.copiesPerCard, visible);
   const chips = waits.map((id) => {
     const c = data.cardMap[id];
-    return '<span class="wait-chip g-' + c.genre + '">' +
-      genreName(c.genre) + '·' + stageName(c.stage) +
+    return '<span class="wait-chip g-' + c.genre + '">' + genreName(c.genre) + '·' + stageName(c.stage) +
       ' <b>' + counts[id] + '</b></span>';
   }).join('');
-  box.innerHTML =
-    '<div class="assist-tenpai">텐파이 — 대기 <span class="chips">' + chips + '</span></div>';
+  return '<div class="assist-tenpai">텐파이 <span class="chips">' + chips + '</span></div>';
 }
 
 // 행동 버튼: 선언 / 버리기 (운명 뺏기 프롬프트는 cutin.js의 오버레이가 담당)

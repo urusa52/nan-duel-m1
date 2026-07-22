@@ -36,23 +36,13 @@ function renderBar(s) {
   const round = s.round;
   const bar = refs.bar;
   bar.innerHTML = '';
-  if (round.turn !== 'player' || round.phase === 'ended') return;
+  // 뽑기는 자동(뽑은 카드 자동 선택)이라 뽑기 버튼 없음. 능력은 전부 뽑은 뒤(decide)에.
+  if (round.turn !== 'player' || round.phase !== 'decide') return;
   const ab = (round.abilities && round.abilities.player) || {};
-
-  if (round.phase === 'draw') {
-    // 뽑기 전: 예언서 / (버림패 있으면)복선 / 뽑기
-    addAbilityBtn(bar, 'foresight', ab.foresight);
-    if (round.discards.player.length > 0) addAbilityBtn(bar, 'foreshadow', ab.foreshadow);
-    const draw = document.createElement('button');
-    draw.type = 'button';
-    draw.id = 'btn-draw';
-    draw.className = 'btn draw-btn';
-    draw.textContent = '뽑기';
-    bar.appendChild(draw);
-  } else if (round.phase === 'decide') {
-    // 뽑은 뒤: 각색 (버릴 카드를 고른 상태에서 눌러 장르 변경)
-    addAbilityBtn(bar, 'adapt', ab.adapt);
-  }
+  addAbilityBtn(bar, 'foresight', ab.foresight);
+  addAbilityBtn(bar, 'adapt', ab.adapt);
+  // 복선은 회수할 내 버림패가 있을 때만 노출
+  if (round.discards.player.length > 0) addAbilityBtn(bar, 'foreshadow', ab.foreshadow);
 }
 
 function addAbilityBtn(bar, id, left) {

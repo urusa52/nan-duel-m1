@@ -17,13 +17,14 @@
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; }
 body {
-  background: var(--night);
+  background: #0a0b10;
   color: var(--paper);
   font-family: "Noto Serif KR", "Nanum Myeongjo", serif;
-  max-width: 480px;
-  margin: 0 auto;
+  min-height: 100vh;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
 }
 
 /* ---------- HUD ---------- */
@@ -325,3 +326,71 @@ body {
 .genre-btn.g-ro { background: var(--g-ro); }
 .genre-btn.g-ho { background: var(--g-ho); }
 .ability-panel .btn.tiny { margin-top: 8px; }
+
+/* ==================================================================
+   테이블 레이아웃 (와이드/PC) — 상대=위 끝, 내 패=아래 끝, 산=가운데 비움.
+   재사용 요소(.card/.discard-grid/.overlay/.tutorial 등)는 위 정의를 계승.
+   ================================================================== */
+.table {
+  position: relative;
+  width: min(1000px, 96vw);
+  height: min(624px, 92vh);
+  border-radius: 20px;
+  background: radial-gradient(120% 80% at 50% 42%, #1c2029 0%, var(--night) 62%);
+  border: 1px solid #23283a;
+  box-shadow: 0 24px 70px rgba(0,0,0,.6), inset 0 0 60px rgba(0,0,0,.35);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+
+/* 점수 코너 · 제목 (테이블 위) */
+.sc { position: absolute; top: 14px; display: flex; align-items: baseline; gap: 7px; z-index: 2; }
+.sc.l { left: 22px; } .sc.r { right: 22px; }
+.sc .hud-label { font-size: .64rem; color: var(--paper-dim); }
+.sc .hud-score { font-size: 1.35rem; color: var(--gold); }
+.ttl { position: absolute; top: 12px; left: 0; right: 0; text-align: center; z-index: 1; }
+.ttl .hud-title { font-size: .86rem; letter-spacing: .03em; }
+.ttl .hud-round { font-size: .64rem; color: var(--paper-dim); margin-top: 1px; }
+
+/* 상대 (위 끝) */
+.opp { padding: 46px 16px 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.opp-head { display: flex; align-items: center; gap: 10px; font-size: .72rem; color: var(--paper-dim); }
+.disc-line { display: flex; align-items: center; gap: 6px; }
+.disc-cap { font-size: .6rem; color: var(--paper-dim); white-space: nowrap; }
+.disc-line .discard-grid { background: transparent; border: none; padding: 2px; min-height: 0; flex-wrap: nowrap; }
+
+/* 중앙 (산 + 왼쪽 패널). 넓게 비움 */
+.mid { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; }
+.wall-zone { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.deck-line { width: 150px; height: 7px; border-radius: 6px;
+  background: linear-gradient(90deg, transparent, rgba(201,162,39,.32), transparent); }
+.wall-info { justify-content: center; font-size: 1.05rem; color: var(--paper); }
+.wall-info b { color: var(--gold); font-size: 1.4rem; }
+.wall-btns { display: flex; gap: 9px; margin-top: 2px; }
+.ghost { font-family: inherit; font-size: .64rem; color: var(--paper-dim);
+  border: 1px solid var(--line); border-radius: 18px; padding: 4px 13px; background: transparent; cursor: pointer; }
+.count-panel { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); z-index: 3; width: 290px; margin: 0; }
+
+/* 왼쪽 고정 패널 — 맞출 수 있는 패 */
+.cond { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); width: 202px;
+  border: 1px solid rgba(201,162,39,.3); border-radius: 12px; padding: 11px 13px; background: rgba(201,162,39,.045); }
+.cond-h { font-size: .72rem; color: var(--gold); margin-bottom: 4px; letter-spacing: .02em; }
+.cond .assist { text-align: left; font-size: .68rem; min-height: 0; }
+.cp-k { font-size: .58rem; color: var(--paper-dim); margin: 8px 0 2px; }
+.cp-li { font-size: .66rem; line-height: 1.6; color: var(--paper); }
+.cp-li.ok { color: #8ec07c; }
+.cp-li.dim { color: var(--paper-dim); opacity: .75; }
+.cp-pt { color: var(--paper-dim); font-size: .58rem; }
+.cond .assist-declare, .cond .assist-hint, .cond .assist-tenpai { margin: 6px 0; text-align: left; }
+.cond .chips { display: block; margin-top: 3px; }
+
+/* 내 패 (아래 끝) */
+.you { padding: 4px 16px 16px; display: flex; flex-direction: column; align-items: center; gap: 7px; }
+.you .actbar { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; min-height: 30px; }
+.you .card-info { min-height: 0; }
+.you .actions { min-height: 0; }
+.you .actions .btn { font-size: .74rem; padding: 7px 14px; }
+.you .hand-row.mine { min-height: 0; flex-wrap: nowrap; }
+.you .hand-row.mine .card { width: 54px; height: 76px; }
+.you .hand-row.mine .card .c-stage { font-size: 1.3rem; }
+.you .hand-row.mine .card .c-genre { font-size: .6rem; }
+.you .ability-bar { margin: 0; }

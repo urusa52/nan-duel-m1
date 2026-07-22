@@ -60,12 +60,13 @@ t('applyForeshadow: 원본 불변', fsDisc.length === 2 && fsHand.length === 2);
 console.log('[duel 능력 전이]');
 const abilityInit = { [P]: initAbilityState(cfg), [A]: initAbilityState(cfg) };
 
-// 예언서: draw 페이즈, 산 불변, 사용 차감
+// 예언서: decide 페이즈, 산 불변, 사용 차감
 {
   const shuffled = ['z1','z2','z3','z4','z5','z6','z7','z8','w1','w2','w3','w4','w5','w6','n1','n2','n3'];
   const r0 = newRound(shuffled, P, abilityInit);
-  const wallLen0 = r0.wall.length;
-  const { round, peek } = useForesight(r0, deps, 3);
+  const decide = { ...r0, phase: 'decide', turn: P };
+  const wallLen0 = decide.wall.length;
+  const { round, peek } = useForesight(decide, deps, 3);
   t('useForesight: peek 3장', peek.length === 3);
   t('useForesight: 산 잔량 불변', round.wall.length === wallLen0);
   t('useForesight: 사용 차감', round.abilities[P].foresight === 0);
@@ -83,20 +84,24 @@ const abilityInit = { [P]: initAbilityState(cfg), [A]: initAbilityState(cfg) };
   t('useAdapt: 사용 차감', out.abilities[P].adapt === 0);
 }
 
-// 복선: draw 페이즈에서 내 버림패 회수 → decide, 산 불변
+// 복선: decide에서 뽑은 카드 무르고 버림패 회수 → 손패 8, 산+1(되돌림), 버림패-1
 {
-  const r0 = newRound(['a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a'], P, abilityInit);
-  const withDisc = {
-    ...r0, phase: 'draw', turn: P,
-    hands: { ...r0.hands, [P]: ['mu-1','mu-2','mu-3','sf-1','sf-2','fa-1','fa-2'] },
-    discards: { ...r0.discards, [P]: ['ho-4'] },
+  const shuffled = ['s1','s2','s3','s4','s5','s6','s7','s8','w1','w2','w3','w4','w5','w6','x1','x2','x3'];
+  const r0 = newRound(shuffled, P, abilityInit);
+  const drew = {
+    ...r0, phase: 'decide', turn: P,
+    hands: { ...r0.hands, [P]: ['mu-1','mu-2','mu-3','sf-1','sf-2','fa-1','fa-2','ho-4'] }, // 끝(ho-4)=뽑은 것
+    discards: { ...r0.discards, [P]: ['ro-1'] },
+    lastDrawn: 'ho-4',
   };
-  const wallLen0 = withDisc.wall.length;
-  const out = useForeshadow(withDisc, deps, 0);
-  t('useForeshadow: 손패 7→8', out.hands[P].length === 8 && out.hands[P].includes('ho-4'));
+  const wallLen0 = drew.wall.length;
+  const out = useForeshadow(drew, deps, 0);
+  t('useForeshadow: 손패 8 유지', out.hands[P].length === 8);
+  t('useForeshadow: 회수 카드 손에', out.hands[P].includes('ro-1'));
+  t('useForeshadow: 뽑은 카드 무름(손에서 빠짐)', !out.hands[P].includes('ho-4'));
   t('useForeshadow: 버림패 비워짐', out.discards[P].length === 0);
-  t('useForeshadow: 산 잔량 불변', out.wall.length === wallLen0);
-  t('useForeshadow: 페이즈 decide', out.phase === 'decide');
+  t('useForeshadow: 산 +1(무른 카드 되돌림)', out.wall.length === wallLen0 + 1);
+  t('useForeshadow: 되돌린 카드 산 맨 앞', out.wall[0] === 'ho-4');
   t('useForeshadow: 사용 차감', out.abilities[P].foreshadow === 0);
 }
 

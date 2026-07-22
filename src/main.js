@@ -44,7 +44,7 @@ async function boot() {
   const evalHand = makeYakuEvaluator(yakuData, cardMap, bondSet, rules);
   const declEval = (h) => { const b = evalHand(h); return b && b.declarable ? b : null; };
   const deps = { cardMap, bondSet, allCardIds, evalHand, rules, waitsFor, declEval };
-  const dataBundle = { cfg, cardsData, bondsData, cardMap, abilities: abilitiesData.abilities };
+  const dataBundle = { cfg, cardsData, bondsData, cardMap, yakuData, abilities: abilitiesData.abilities };
   // 능력 초기 잔여(공용 — 양측 동일). 국마다 newRound에 넘겨 자동 리셋된다.
   const abilityInit = { [P]: initAbilityState(cfg), [A]: initAbilityState(cfg) };
 
@@ -87,14 +87,6 @@ async function boot() {
     advance();
   }
 
-  // 내 턴 '뽑기 전'에 쓸 수 있는 능력(예언서/복선)이 남아 있는가.
-  // 복선은 회수할 내 버림패가 있어야 의미가 있으므로 함께 확인.
-  function playerHasPreDraw(round) {
-    const ab = (round.abilities && round.abilities[P]) || {};
-    const foresight = (ab.foresight || 0) > 0;
-    const foreshadow = (ab.foreshadow || 0) > 0 && round.discards[P].length > 0;
-    return foresight || foreshadow;
-  }
 
   // 진행 엔진: 현재 페이즈를 보고 자동 진행이 필요한 부분만 민다.
   // 플레이어 입력이 필요한 지점(내 decide, 내 뺏기 결정)에서는 멈춘다.
@@ -104,11 +96,13 @@ async function boot() {
     if (!round || round.phase === 'ended') { onRoundEnd(); return; }
 
     if (round.phase === 'draw') {
-      // 조건부 정지: 내 턴이고 '뽑기 전' 쓸 능력이 남아 있으면 자동으로 안 뽑고 멈춘다.
-      // (능력이 없거나 다 썼으면 기존처럼 자동 뽑기 → 평범한 턴엔 군더더기 없음.)
-      if (round.turn === P && playerHasPreDraw(round)) return; // abilityUI가 예언서/복선/뽑기를 그림
       round = drawStep(round, deps);
-      setState({ round });
+      // 내 턴이면 방금 뽑은 카드를 자동 선택 (마작식 — 뽑은 패가 기본 버림 후보).
+      const patch = { round };
+      if (round.phase === 'decide' && round.turn === P) {
+        patch.ui = { ...getState().ui, selectedIndex: round.hands[P].length - 1 };
+      }
+      setState(patch);
       if (round.phase === 'ended') { onRoundEnd(); return; } // 유국
       // decide로 넘어감 — 잠깐의 템포 후 계속 (D2 빠른 템포)
       setTimeout(advance, cfg.tempo.drawMs);
@@ -233,35 +227,23 @@ async function boot() {
     advance();
   });
 
-  // ---- 특수 능력 intent 배선 ----
-  // 예언서: 뽑기 전, 다음 n장 미리보기. draw 페이즈 유지(플레이어가 뽑기/복선 선택).
+  // ---- 특수 능력 intent 배선 (전부 뽑은 뒤 decide에서 사용) ----
+  // 예언서: 산 위 n장 미리보기. 손패·산 불변, 사용 1 차감.
   on('intent:foresight', () => {
     const s = getState();
     const round = s.round;
-    if (!round || round.turn !== P || round.phase !== 'draw') return;
+    if (!round || round.turn !== P || round.phase !== 'decide') return;
     if (!canUse(round.abilities[P], 'foresight')) return;
     const n = (cfg.abilities && cfg.abilities.foresight && cfg.abilities.foresight.peek) || 3;
     const { round: r2, peek } = useForesight(round, deps, n);
     setState({ round: r2, ui: { ...s.ui, abilityMode: 'foresight', foresightPeek: peek } });
   });
 
-  // 뽑기: 조건부 정지에서 정상 뽑기로 진행(정지를 끝낸다).
-  on('intent:draw', () => {
-    const s = getState();
-    const round = s.round;
-    if (!round || round.turn !== P || round.phase !== 'draw') return;
-    setState({ ui: { ...s.ui, abilityMode: null, foresightPeek: null } });
-    const r2 = drawStep(getState().round, deps);
-    setState({ round: r2 });
-    if (r2.phase === 'ended') { onRoundEnd(); return; }
-    setTimeout(advance, cfg.tempo.drawMs);
-  });
-
   // 복선: 회수 모드 진입 → 내 버림패 선택 → commit.
   on('intent:foreshadow-start', () => {
     const s = getState();
     const round = s.round;
-    if (!round || round.turn !== P || round.phase !== 'draw') return;
+    if (!round || round.turn !== P || round.phase !== 'decide') return;
     if (!(canUse(round.abilities[P], 'foreshadow') && round.discards[P].length > 0)) return;
     setState({ ui: { ...s.ui, abilityMode: 'foreshadow', foresightPeek: null } });
   });
@@ -269,12 +251,12 @@ async function boot() {
   on('intent:foreshadow-commit', () => {
     const s = getState();
     const round = s.round;
-    if (!round || round.turn !== P || round.phase !== 'draw') return;
+    if (!round || round.turn !== P || round.phase !== 'decide') return;
     const idx = s.ui.foreshadowIndex;
     if (idx == null) return;
-    const r2 = useForeshadow(round, deps, idx); // 손패 7→8, decide로, 산 불변
-    setState({ round: r2, ui: { ...s.ui, abilityMode: null, foreshadowIndex: null } });
-    advance();
+    const r2 = useForeshadow(round, deps, idx); // 뽑은 카드 무르고 버림패 회수(손패 8·산 불변)
+    // 회수 후엔 무엇을 버릴지 다시 고르게 선택 해제
+    setState({ round: r2, ui: { ...s.ui, abilityMode: null, foreshadowIndex: null, selectedIndex: null } });
   });
 
   // 각색: 버릴 카드를 고른 상태에서 시작 → 장르 선택 → commit.

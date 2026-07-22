@@ -51,7 +51,6 @@ export function initControls() {
   document.getElementById('ability-bar').addEventListener('click', (e) => {
     const btn = e.target.closest('button');
     if (!btn || btn.disabled) return;
-    if (btn.id === 'btn-draw') { emit('intent:draw'); return; }
     const ab = btn.dataset.ability;
     if (ab === 'foresight') emit('intent:foresight');
     else if (ab === 'foreshadow') emit('intent:foreshadow-start');

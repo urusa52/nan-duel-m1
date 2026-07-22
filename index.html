@@ -2,61 +2,68 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>우리는 아직 『 』입니다 — 대국</title>
-<link rel="stylesheet" href="./css/style.css?v=1">
+<link rel="stylesheet" href="./css/style.css?v=2">
 </head>
 <body>
-<header id="hud">
-  <div class="hud-side">
-    <span class="hud-label">나</span>
-    <span id="my-score" class="hud-score">0</span>
-  </div>
-  <div class="hud-mid">
+
+<!-- 테이블: 상대는 위 끝, 내 패는 아래 끝, 가운데(산)는 비움 -->
+<div class="table">
+  <div class="sc l"><span class="hud-label">나</span><span id="my-score" class="hud-score">0</span></div>
+  <div class="ttl">
     <p class="hud-title">우리는 아직 『 』입니다</p>
     <p class="hud-round">제<span id="round-no">1</span>국 · <span id="target-score"></span></p>
   </div>
-  <div class="hud-side">
-    <span class="hud-label">라이벌</span>
-    <span id="ai-score" class="hud-score">0</span>
-  </div>
-</header>
+  <div class="sc r"><span class="hud-label">라이벌</span><span id="ai-score" class="hud-score">0</span></div>
 
-<main id="table">
-  <!-- 상대 영역 -->
-  <section class="zone ai-zone">
-    <div class="zone-head">
+  <!-- 상대 (위 끝) -->
+  <section class="opp ai-zone">
+    <div class="opp-head">
       <span>라이벌 이야기꾼</span>
-      <span class="zone-head-right">
-        <span id="ai-warn" class="ai-warn"></span>
-        <span id="turn-badge" class="turn-badge"></span>
-      </span>
+      <span id="ai-warn" class="ai-warn"></span>
+      <span id="turn-badge" class="turn-badge"></span>
     </div>
     <div id="ai-hand" class="hand-row backs"></div>
-    <div id="ai-discards" class="discard-grid" aria-label="상대 버림패"></div>
-  </section>
-
-  <!-- 산 -->
-  <section class="zone wall-zone">
-    <div class="wall-info">
-      <span>산 <b id="wall-count">0</b>장</span>
-      <button type="button" id="btn-counts" class="btn tiny">수읽기</button>
-      <button type="button" id="btn-help" class="btn tiny">?</button>
+    <div class="disc-line">
+      <span class="disc-cap">상대 버림패</span>
+      <div id="ai-discards" class="discard-grid" aria-label="상대 버림패"></div>
     </div>
-    <div id="count-panel" class="count-panel hidden"></div>
   </section>
 
-  <!-- 내 영역 -->
-  <section class="zone my-zone">
-    <div id="my-discards" class="discard-grid" aria-label="내 버림패"></div>
-    <div id="assist" class="assist"></div>
-    <div id="ability-bar" class="ability-bar"></div>
+  <!-- 중앙: 산 + 왼쪽 '맞출 수 있는 패' -->
+  <section class="mid">
+    <aside class="cond">
+      <div class="cond-h">맞출 수 있는 패</div>
+      <div id="assist" class="assist"></div>
+    </aside>
+
+    <div class="wall-zone">
+      <div class="deck-line"></div>
+      <div class="wall-info"><span>산 <b id="wall-count">0</b>장</span></div>
+      <div class="wall-btns">
+        <button type="button" id="btn-counts" class="ghost">수읽기</button>
+        <button type="button" id="btn-help" class="ghost">?</button>
+      </div>
+      <div id="count-panel" class="count-panel hidden"></div>
+    </div>
+  </section>
+
+  <!-- 내 패 (아래 끝) -->
+  <section class="you">
+    <div class="disc-line">
+      <span class="disc-cap">내 버림패</span>
+      <div id="my-discards" class="discard-grid" aria-label="내 버림패"></div>
+    </div>
+    <div class="actbar">
+      <p id="card-info" class="card-info"></p>
+      <div id="actions" class="actions"></div>
+      <div id="ability-bar" class="ability-bar"></div>
+    </div>
     <div id="my-hand" class="hand-row mine"></div>
-    <p id="card-info" class="card-info"></p>
-    <div id="actions" class="actions"></div>
     <div id="ability-panel" class="ability-panel hidden"></div>
   </section>
-</main>
+</div>
 
 <!-- 튜토리얼 오버레이 (독립 모듈) -->
 <div id="tutorial" class="tutorial hidden"></div>
@@ -68,17 +75,18 @@
 <div id="help" class="overlay hidden">
   <div class="modal help">
     <p class="help-title">이야기 대국 — 규칙</p>
-    <p>산에서 번갈아 카드를 뽑고 한 장을 버립니다. 손패 8장이 <b>세트 3장 × 2 + 짝 2장</b>을 이루고 역이 1개 이상이면 완성을 선언해 국을 이깁니다.</p>
-    <p><b>세트</b>: 같은 장르 3장, 또는 서사 순서 3장 (기원→시련→각성 / 시련→각성→승리)</p>
+    <p>내 차례엔 산에서 자동으로 한 장 뽑히고(뽑은 카드 자동 선택), 한 장을 버립니다. 손패 8장이 <b>세트 3장 × 2 + 짝 2장</b>을 이루고 역이 1개 이상이면 완성을 선언해 국을 이깁니다.</p>
+    <p><b>세트</b>: 같은 장르 3장, 또는 서사 순서 3장 (기→승→전 / 승→전→결)</p>
     <p><b>짝</b>: 같은 영웅 2장, 또는 인연 짝</p>
     <p><b>운명 뺏기</b>: 상대가 버린 카드로 내 손이 완성되면 가로챌 수 있습니다.</p>
-    <p><b>수읽기</b>: 산의 구성은 공개(각 20종 × 3장). "수읽기" 버튼으로 아직 안 보인 장수를 셀 수 있습니다.</p>
+    <p><b>특수 능력</b>(각 1회): 예언서(산 위 3장 보기) · 각색(손패 장르 바꾸기) · 복선(뽑은 카드 무르고 버림패 회수).</p>
+    <p><b>수읽기</b>: 산의 구성은 공개(각 20종 × 3장). "수읽기"로 아직 안 보인 장수를 셀 수 있습니다.</p>
     <p>먼저 목표 점수에 도달하면 매치 승리. 산이 마르면 텐파이(한 장 대기) 쪽이 소점을 가져갑니다.</p>
     <button type="button" id="btn-tutorial-again" class="btn">튜토리얼 다시 보기</button>
     <button type="button" id="btn-help-close" class="btn declare">닫기</button>
   </div>
 </div>
 
-<script type="module" src="./src/main.js?v=1"></script>
+<script type="module" src="./src/main.js?v=2"></script>
 </body>
 </html>

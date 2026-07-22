@@ -5,7 +5,7 @@
 
 import { draw as wallDraw } from './wall.js';
 import { isFormalTenpai } from './handEval.js';
-import { canUse, spend, applyForesight, applyAdapt, applyForeshadow } from './abilities.js';
+import { canUse, spend, applyForesight, applyAdapt } from './abilities.js';
 
 export const P = 'player';
 export const A = 'ai';
@@ -40,10 +40,11 @@ export function newRound(shuffledWall, firstTurn, abilityInit = { [P]: {}, [A]: 
 
 // ---- 특수 능력 사용 (모두 순수 상태 전이) ----
 // 공통: 자기 턴에만, 잔여 횟수 있을 때만. 잘못된 페이즈/소진 시 throw.
+// 뽑기는 자동(뽑은 카드 자동 선택)이므로 능력은 전부 뽑은 뒤(decide)에 쓴다.
 
-// 예언서 (beforeDraw): 다음 뽑을 n장을 미리 본다. {round, peek} 반환. 산·손패 불변.
+// 예언서 (decide): 산 위 n장을 미리 본다. {round, peek} 반환. 산·손패 불변.
 export function useForesight(state, deps, n) {
-  if (state.phase !== 'draw') throw new Error('useForesight: wrong phase ' + state.phase);
+  if (state.phase !== 'decide') throw new Error('useForesight: wrong phase ' + state.phase);
   const who = state.turn;
   if (!canUse(state.abilities?.[who], 'foresight')) throw new Error('useForesight: no use left');
   const peek = applyForesight(state.wall, n);
@@ -51,7 +52,7 @@ export function useForesight(state, deps, n) {
   return { round: { ...state, abilities }, peek };
 }
 
-// 각색 (beforeDiscard): decide 페이즈에서 손패 index 카드의 장르를 바꾼다.
+// 각색 (decide): 손패 index 카드의 장르를 바꾼다(단계 유지).
 export function useAdapt(state, deps, index, newGenre) {
   if (state.phase !== 'decide') throw new Error('useAdapt: wrong phase ' + state.phase);
   const who = state.turn;
@@ -62,16 +63,31 @@ export function useAdapt(state, deps, index, newGenre) {
   return { ...state, hands, abilities };
 }
 
-// 복선 (insteadOfDraw): draw 페이즈에서 내 버림패 1장을 회수(7→8) → decide로. 산 불변.
+// 복선 (decide): "이번에 뽑은 카드를 무르고" 내 버림패 1장을 회수한다.
+// 자동 뽑기 모델에 맞춘 정의 — 순효과: 손패 8장 유지 / 산 잔량 불변(뽑은 카드를
+// 산 맨 아래로 되돌림) / 내 버림패 -1. 그 뒤 평소처럼 한 장 버린다.
 export function useForeshadow(state, deps, discardIndex) {
-  if (state.phase !== 'draw') throw new Error('useForeshadow: wrong phase ' + state.phase);
+  if (state.phase !== 'decide') throw new Error('useForeshadow: wrong phase ' + state.phase);
   const who = state.turn;
   if (!canUse(state.abilities?.[who], 'foreshadow')) throw new Error('useForeshadow: no use left');
-  const { hand, discards } = applyForeshadow(state.hands[who], state.discards[who], discardIndex);
-  const hands = { ...state.hands, [who]: hand };
-  const newDiscards = { ...state.discards, [who]: discards };
+  if (state.lastDrawn == null) throw new Error('useForeshadow: nothing drawn to trade');
+  const recovered = state.discards[who][discardIndex];
+  if (recovered == null) throw new Error('useForeshadow: no discard at ' + discardIndex);
+  const hand = state.hands[who].slice();
+  const drawn = hand.pop();            // 방금 뽑은 카드(배열 끝) 무름 → 8→7
+  hand.push(recovered);                // 회수 카드로 채움 → 7→8
+  const discards = state.discards[who].slice();
+  discards.splice(discardIndex, 1);
+  const wall = [drawn].concat(state.wall); // 끝에서 뽑으므로 맨 앞=맨 아래(즉시 재뽑기 방지)
   const abilities = { ...state.abilities, [who]: spend(state.abilities[who], 'foreshadow') };
-  return { ...state, hands, discards: newDiscards, abilities, lastDrawn: hand[hand.length - 1], phase: 'decide' };
+  return {
+    ...state,
+    wall,
+    hands: { ...state.hands, [who]: hand },
+    discards: { ...state.discards, [who]: discards },
+    abilities,
+    lastDrawn: recovered,
+  };
 }
 
 // 뽑기: 산이 비었으면 유국 처리. 아니면 손패 7→8.

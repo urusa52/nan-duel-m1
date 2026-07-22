@@ -18,7 +18,7 @@ function t(name, cond, extra = '') {
 console.log('[임포트]');
 for (const m of [
   '../src/logic/wall.js', '../src/logic/handEval.js', '../src/logic/yakuEval.js',
-  '../src/logic/duel.js', '../src/logic/match.js', '../src/logic/ai.js',
+  '../src/logic/duel.js', '../src/logic/match.js', '../src/logic/ai.js', '../src/logic/analysis.js',
   '../src/core/store.js', '../src/core/eventBus.js',
   '../src/render/table.js', '../src/render/handUI.js',
   '../src/render/cutin.js', '../src/render/hud.js', '../src/render/tutorial.js',

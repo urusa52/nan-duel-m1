@@ -1,37 +1,164 @@
 {
   "genres": [
-    { "key": "mu", "name": "무협" },
-    { "key": "sf", "name": "SF" },
-    { "key": "fa", "name": "판타지" },
-    { "key": "ro", "name": "로맨스" },
-    { "key": "ho", "name": "호러" }
+    {
+      "key": "mu",
+      "name": "무협"
+    },
+    {
+      "key": "sf",
+      "name": "SF"
+    },
+    {
+      "key": "fa",
+      "name": "판타지"
+    },
+    {
+      "key": "ro",
+      "name": "로맨스"
+    },
+    {
+      "key": "ho",
+      "name": "호러"
+    }
   ],
   "stages": [
-    { "n": 1, "name": "기원" },
-    { "n": 2, "name": "시련" },
-    { "n": 3, "name": "각성" },
-    { "n": 4, "name": "승리" }
+    {
+      "n": 1,
+      "name": "기"
+    },
+    {
+      "n": 2,
+      "name": "승"
+    },
+    {
+      "n": 3,
+      "name": "전"
+    },
+    {
+      "n": 4,
+      "name": "결"
+    }
   ],
   "cards": [
-    { "id": "mu-1", "genre": "mu", "stage": 1, "name": "떠돌이 소년 무영" },
-    { "id": "mu-2", "genre": "mu", "stage": 2, "name": "파문 제자 백리흔" },
-    { "id": "mu-3", "genre": "mu", "stage": 3, "name": "각성한 검객 단천" },
-    { "id": "mu-4", "genre": "mu", "stage": 4, "name": "무림지존 하후렴" },
-    { "id": "sf-1", "genre": "sf", "stage": 1, "name": "폐품장의 소년 로빈" },
-    { "id": "sf-2", "genre": "sf", "stage": 2, "name": "표류하는 항해사 벨라" },
-    { "id": "sf-3", "genre": "sf", "stage": 3, "name": "재기동 안드로이드 K" },
-    { "id": "sf-4", "genre": "sf", "stage": 4, "name": "은하의 수호자 오리온" },
-    { "id": "fa-1", "genre": "fa", "stage": 1, "name": "견습 마법사 피노" },
-    { "id": "fa-2", "genre": "fa", "stage": 2, "name": "추방당한 용사 아렌" },
-    { "id": "fa-3", "genre": "fa", "stage": 3, "name": "용의 계약자 이슈타르" },
-    { "id": "fa-4", "genre": "fa", "stage": 4, "name": "왕이 된 방랑자 카엘" },
-    { "id": "ro-1", "genre": "ro", "stage": 1, "name": "첫사랑의 소녀 연화" },
-    { "id": "ro-2", "genre": "ro", "stage": 2, "name": "엇갈린 연인 세라" },
-    { "id": "ro-3", "genre": "ro", "stage": 3, "name": "비 오는 날의 화가 도윤" },
-    { "id": "ro-4", "genre": "ro", "stage": 4, "name": "결혼식의 신부 아델" },
-    { "id": "ho-1", "genre": "ho", "stage": 1, "name": "저주받은 아이 노아" },
-    { "id": "ho-2", "genre": "ho", "stage": 2, "name": "밤을 걷는 사서 릴리스" },
-    { "id": "ho-3", "genre": "ho", "stage": 3, "name": "각성한 뱀파이어 빅터" },
-    { "id": "ho-4", "genre": "ho", "stage": 4, "name": "공포를 삼킨 자 그림" }
+    {
+      "id": "mu-1",
+      "genre": "mu",
+      "stage": 1,
+      "name": "떠돌이 소년 무영"
+    },
+    {
+      "id": "mu-2",
+      "genre": "mu",
+      "stage": 2,
+      "name": "파문 제자 백리흔"
+    },
+    {
+      "id": "mu-3",
+      "genre": "mu",
+      "stage": 3,
+      "name": "각성한 검객 단천"
+    },
+    {
+      "id": "mu-4",
+      "genre": "mu",
+      "stage": 4,
+      "name": "무림지존 하후렴"
+    },
+    {
+      "id": "sf-1",
+      "genre": "sf",
+      "stage": 1,
+      "name": "폐품장의 소년 로빈"
+    },
+    {
+      "id": "sf-2",
+      "genre": "sf",
+      "stage": 2,
+      "name": "표류하는 항해사 벨라"
+    },
+    {
+      "id": "sf-3",
+      "genre": "sf",
+      "stage": 3,
+      "name": "재기동 안드로이드 K"
+    },
+    {
+      "id": "sf-4",
+      "genre": "sf",
+      "stage": 4,
+      "name": "은하의 수호자 오리온"
+    },
+    {
+      "id": "fa-1",
+      "genre": "fa",
+      "stage": 1,
+      "name": "견습 마법사 피노"
+    },
+    {
+      "id": "fa-2",
+      "genre": "fa",
+      "stage": 2,
+      "name": "추방당한 용사 아렌"
+    },
+    {
+      "id": "fa-3",
+      "genre": "fa",
+      "stage": 3,
+      "name": "용의 계약자 이슈타르"
+    },
+    {
+      "id": "fa-4",
+      "genre": "fa",
+      "stage": 4,
+      "name": "왕이 된 방랑자 카엘"
+    },
+    {
+      "id": "ro-1",
+      "genre": "ro",
+      "stage": 1,
+      "name": "첫사랑의 소녀 연화"
+    },
+    {
+      "id": "ro-2",
+      "genre": "ro",
+      "stage": 2,
+      "name": "엇갈린 연인 세라"
+    },
+    {
+      "id": "ro-3",
+      "genre": "ro",
+      "stage": 3,
+      "name": "비 오는 날의 화가 도윤"
+    },
+    {
+      "id": "ro-4",
+      "genre": "ro",
+      "stage": 4,
+      "name": "결혼식의 신부 아델"
+    },
+    {
+      "id": "ho-1",
+      "genre": "ho",
+      "stage": 1,
+      "name": "저주받은 아이 노아"
+    },
+    {
+      "id": "ho-2",
+      "genre": "ho",
+      "stage": 2,
+      "name": "밤을 걷는 사서 릴리스"
+    },
+    {
+      "id": "ho-3",
+      "genre": "ho",
+      "stage": 3,
+      "name": "각성한 뱀파이어 빅터"
+    },
+    {
+      "id": "ho-4",
+      "genre": "ho",
+      "stage": 4,
+      "name": "공포를 삼킨 자 그림"
+    }
   ]
 }

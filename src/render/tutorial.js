@@ -10,7 +10,7 @@ const SLIDES = [
   },
   {
     title: '카드 읽는 법',
-    body: '카드에는 <b>장르</b>(색)와 <b>서사 단계</b>(글자)가 있습니다. 기(기원) → 시(시련) → 각(각성) → 승(승리). 색은 무협·SF·판타지·로맨스·호러 다섯 장르입니다.',
+    body: '카드에는 <b>장르</b>(색)와 <b>서사 단계</b>(글자)가 있습니다. 기(기) → 승(승) → 전(전) → 결(결)의 네 단계로 이야기가 흐릅니다. 색은 무협·SF·판타지·로맨스·호러 다섯 장르입니다.',
     demo: true,
   },
   {
@@ -137,23 +137,23 @@ function exampleHandHtml() {
       label: '세트 ① — 서사 (같은 장르 연속)',
       cards: [
         { g: 'mu', s: '기', n: '무협' },
-        { g: 'mu', s: '시', n: '무협' },
-        { g: 'mu', s: '각', n: '무협' },
+        { g: 'mu', s: '승', n: '무협' },
+        { g: 'mu', s: '전', n: '무협' },
       ],
     },
     {
       label: '세트 ② — 장르 (같은 장르 3장)',
       cards: [
         { g: 'sf', s: '기', n: 'SF' },
-        { g: 'sf', s: '각', n: 'SF' },
-        { g: 'sf', s: '승', n: 'SF' },
+        { g: 'sf', s: '전', n: 'SF' },
+        { g: 'sf', s: '결', n: 'SF' },
       ],
     },
     {
       label: '짝 — 인연',
       cards: [
-        { g: 'ro', s: '각', n: '로맨스' },
-        { g: 'mu', s: '각', n: '무협' },
+        { g: 'ro', s: '전', n: '로맨스' },
+        { g: 'mu', s: '전', n: '무협' },
       ],
     },
   ];
@@ -170,9 +170,9 @@ function exampleHandHtml() {
 function demoCardsHtml() {
   // 순수 표시용 데모 타일 (로직 카드와 무관, 학습용)
   const tiles = [
-    { g: 'mu', s: '기', n: '무협·기원' },
-    { g: 'sf', s: '각', n: 'SF·각성' },
-    { g: 'ro', s: '승', n: '로맨스·승리' },
+    { g: 'mu', s: '기', n: '무협·기' },
+    { g: 'sf', s: '전', n: 'SF·전' },
+    { g: 'ro', s: '결', n: '로맨스·결' },
   ];
   return '<div class="tut-demo">' + tiles.map((t) =>
     '<span class="card g-' + t.g + '"><span class="c-stage">' + t.s + '</span>' +

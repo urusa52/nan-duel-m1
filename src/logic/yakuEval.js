@@ -19,7 +19,7 @@ function yakuForDecomp(decomp, hand, cardMap) {
   if (s1.sameGenre && s2.sameGenre && s1.genre !== s2.genre) ids.push('anthology2');
   // 전속 작가: 두 세트가 같은 장르로 통일
   if (s1.sameGenre && s2.sameGenre && s1.genre === s2.genre) ids.push('exclusive');
-  // 완결: 승리(4단계)로 끝나는 서사 세트 포함 (2-3-4)
+  // 완결: 결(4단계)로 끝나는 서사 세트 포함 (2-3-4)
   const endsAtVictory = (s) => s.isRun && s.runStages[2] === 4;
   if (endsAtVictory(s1) || endsAtVictory(s2)) ids.push('finale');
   // 인연: 짝이 인연 짝
@@ -28,11 +28,11 @@ function yakuForDecomp(decomp, hand, cardMap) {
   if (genreSetAll.size === 1) ids.push('complete');
   // 오대 장르: 5개 장르 전부 등장
   if (genreSetAll.size === 5) ids.push('fiveGenre');
-  // 기승전결: 서사 세트 둘이 1-2-3과 2-3-4로 기원→승리 완주
+  // 대서사시: 서사 세트 둘이 1-2-3과 2-3-4로 기→결 완주
   const runKey = (s) => (s.isRun ? s.runStages.join('') : '');
   const keys = [runKey(s1), runKey(s2)];
   if (keys.includes('123') && keys.includes('234')) ids.push('fourAct');
-  // 불후의 명작: 전집 + 기승전결 동시
+  // 불후의 명작: 전집 + 대서사시 동시
   if (ids.includes('complete') && ids.includes('fourAct')) ids.push('masterpiece');
 
   return ids;

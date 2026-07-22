@@ -1,15 +1,66 @@
 {
   "note": "가산역 v1 (D30). 점수는 임시값 — 시뮬레이션으로 확정. 조건 판정은 yakuEval.js.",
   "yaku": [
-    { "id": "crossover",  "name": "크로스오버",  "sub": "장르 무관 서사 세트 포함", "score": 1 },
-    { "id": "anthology2", "name": "단편집",      "sub": "서로 다른 장르 세트 2개", "score": 1 },
-    { "id": "bond",       "name": "인연",        "sub": "짝이 인연 짝",           "score": 2 },
-    { "id": "pureSerial", "name": "정통 연재",   "sub": "같은 장르 연속 서사 세트", "score": 2 },
-    { "id": "finale",     "name": "완결",        "sub": "승리로 끝나는 서사 세트",  "score": 2 },
-    { "id": "exclusive",  "name": "전속 작가",   "sub": "두 세트가 같은 장르",     "score": 3 },
-    { "id": "complete",   "name": "전집",        "sub": "8장 전부 같은 장르",      "score": 5 },
-    { "id": "fourAct",    "name": "기승전결",    "sub": "서사 세트로 기원→승리 완주", "score": 6 },
-    { "id": "fiveGenre",  "name": "오대 장르",   "sub": "5개 장르 전부 등장",      "score": 5 },
-    { "id": "masterpiece","name": "불후의 명작", "sub": "전집+기승전결 동시",      "score": 13, "yakuman": true }
+    {
+      "id": "crossover",
+      "name": "크로스오버",
+      "sub": "장르 무관 서사 세트 포함",
+      "score": 1
+    },
+    {
+      "id": "anthology2",
+      "name": "단편집",
+      "sub": "서로 다른 장르 세트 2개",
+      "score": 1
+    },
+    {
+      "id": "bond",
+      "name": "인연",
+      "sub": "짝이 인연 짝",
+      "score": 2
+    },
+    {
+      "id": "pureSerial",
+      "name": "정통 연재",
+      "sub": "같은 장르 연속 서사 세트",
+      "score": 2
+    },
+    {
+      "id": "finale",
+      "name": "완결",
+      "sub": "결로 끝나는 서사 세트",
+      "score": 2
+    },
+    {
+      "id": "exclusive",
+      "name": "전속 작가",
+      "sub": "두 세트가 같은 장르",
+      "score": 3
+    },
+    {
+      "id": "complete",
+      "name": "전집",
+      "sub": "8장 전부 같은 장르",
+      "score": 5
+    },
+    {
+      "id": "fourAct",
+      "name": "대서사시",
+      "sub": "서사 세트로 기→결 완주",
+      "score": 6
+    },
+    {
+      "id": "fiveGenre",
+      "name": "오대 장르",
+      "sub": "5개 장르 전부 등장",
+      "score": 5
+    },
+    {
+      "id": "masterpiece",
+      "name": "불후의 명작",
+      "sub": "전집+대서사시 동시",
+      "score": 13,
+      "yakuman": true
+    }
   ]
 }

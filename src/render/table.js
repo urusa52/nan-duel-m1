@@ -3,13 +3,19 @@
 
 import { unseenCounts } from '../logic/wall.js';
 
-export const STAGE_GLYPH = { 1: '기', 2: '시', 3: '각', 4: '승' };
+// 단계 글리프는 cards.json의 stage name에서 파생한다 (하드코딩 금지 — 단일 진실원천).
+export let STAGE_GLYPH = {};
+function buildStageGlyph() {
+  STAGE_GLYPH = {};
+  for (const st of data.cardsData.stages) STAGE_GLYPH[st.n] = st.name;
+}
 
 let refs = null;
 let data = null;
 
 export function initTable(dataBundle) {
   data = dataBundle; // { cardsData, cardMap, cfg }
+  buildStageGlyph();
   refs = {
     aiHand: document.getElementById('ai-hand'),
     aiDiscards: document.getElementById('ai-discards'),

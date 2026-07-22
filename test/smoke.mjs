@@ -21,7 +21,7 @@ for (const m of [
   '../src/logic/duel.js', '../src/logic/match.js', '../src/logic/ai.js',
   '../src/core/store.js', '../src/core/eventBus.js',
   '../src/render/table.js', '../src/render/handUI.js',
-  '../src/render/cutin.js', '../src/render/hud.js',
+  '../src/render/cutin.js', '../src/render/hud.js', '../src/render/tutorial.js',
   '../src/input/controls.js',
 ]) {
   try {
@@ -38,11 +38,15 @@ const html = read('index.html');
 const jsFiles = [
   'src/main.js', 'src/render/table.js', 'src/render/handUI.js',
   'src/render/cutin.js', 'src/render/hud.js', 'src/input/controls.js',
+  'src/render/tutorial.js',
 ];
+const dynamicIds = ['btn-declare', 'btn-discard', 'btn-steal', 'btn-pass-steal', 'btn-next', 'btn-rematch'];
 const idRefs = new Set();
 for (const f of jsFiles) {
   const src = read(f);
-  for (const m of src.matchAll(/getElementById\('([^']+)'\)/g)) idRefs.add(m[1]);
+  for (const m of src.matchAll(/getElementById\('([^']+)'\)/g)) {
+    if (!dynamicIds.includes(m[1])) idRefs.add(m[1]); // 동적 생성 버튼은 별도 검사
+  }
 }
 let allIds = true;
 for (const id of idRefs) {
@@ -54,7 +58,6 @@ for (const id of idRefs) {
 t('JS가 참조하는 DOM id ' + idRefs.size + '개 모두 존재', allIds);
 
 // 동적 생성 버튼 id (cutin/handUI가 만들고 controls가 위임 처리)
-const dynamicIds = ['btn-declare', 'btn-discard', 'btn-steal', 'btn-pass-steal', 'btn-next', 'btn-rematch'];
 const cutinSrc = read('src/render/cutin.js') + read('src/render/handUI.js');
 const controlsSrc = read('src/input/controls.js');
 let dynOk = true;

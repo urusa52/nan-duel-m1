@@ -37,6 +37,11 @@ export function initControls() {
     document.getElementById('help').classList.toggle('hidden');
   });
   document.getElementById('help').addEventListener('click', (e) => {
+    if (e.target.id === 'btn-tutorial-again') {
+      document.getElementById('help').classList.add('hidden');
+      emit('intent:restart-tutorial');
+      return;
+    }
     if (e.target.id === 'help' || e.target.id === 'btn-help-close') {
       document.getElementById('help').classList.add('hidden');
     }

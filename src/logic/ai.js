@@ -27,7 +27,7 @@ function potential(hand7, cardMap, bondSet) {
 // hand8 → { action: 'declare' } | { action: 'discard', card }
 export function aiChooseAction(hand8, deps) {
   const best = deps.evalHand(hand8);
-  if (best && best.score > 0) return { action: 'declare' };
+  if (best && best.declarable) return { action: 'declare' };
 
   let bestChoice = null;
   const tried = new Set(); // 같은 종류는 한 번만 평가
@@ -37,7 +37,9 @@ export function aiChooseAction(hand8, deps) {
     tried.add(id);
     const hand7 = hand8.slice(0, i).concat(hand8.slice(i + 1));
     const waits = waitsFor(
-      hand7, deps.cardMap, deps.bondSet, deps.allCardIds, deps.evalHand
+      hand7, deps.cardMap, deps.bondSet, deps.allCardIds,
+      (h) => { const b = deps.evalHand(h); return b && b.declarable ? b : null; },
+      deps.rules
     );
     const cand = {
       card: id,

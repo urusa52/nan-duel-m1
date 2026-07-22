@@ -2,7 +2,7 @@
 // 원칙: 조건 로직은 코드, 이름·점수는 yaku.json (수치는 데이터로 — 프로젝트 규칙 5).
 // 가산역은 중복 합산. 역만(불후의 명작)은 단독 점수로 대체.
 
-import { decompose } from './handEval.js';
+import { decompose, DEFAULT_RULES } from './handEval.js';
 
 // 분해 하나에 대해 성립 역 id 목록을 계산
 function yakuForDecomp(decomp, hand, cardMap) {
@@ -39,13 +39,13 @@ function yakuForDecomp(decomp, hand, cardMap) {
 }
 
 // 팩토리: yaku.json을 받아 평가 함수를 만든다
-export function makeYakuEvaluator(yakuData, cardMap, bondSet) {
+export function makeYakuEvaluator(yakuData, cardMap, bondSet, rules = DEFAULT_RULES) {
   const table = {};
   for (const y of yakuData.yaku) table[y.id] = y;
 
   // hand(8장) → 최고 점수 해석 { score, yaku:[{id,name,score}], decomp } | null(미완성)
   return function evalHand(hand) {
-    const decomps = decompose(hand, cardMap, bondSet);
+    const decomps = decompose(hand, cardMap, bondSet, rules);
     if (decomps.length === 0) return null;
     let best = null;
     for (const d of decomps) {
@@ -64,7 +64,8 @@ export function makeYakuEvaluator(yakuData, cardMap, bondSet) {
         best = { score, yaku: list, decomp: d };
       }
     }
-    // D35: 최소 1역 — score 0이면 선언 불가지만, 정보는 반환 (UI 표시용)
+    // 선언 자격 (D35 + 난이도 레버): 역 개수가 minYakuToDeclare 이상
+    if (best) best.declarable = best.yaku.length >= rules.minYakuToDeclare && best.score > 0;
     return best;
   };
 }

@@ -200,3 +200,58 @@ body {
 .help-title { font-size: 1.05rem; color: var(--gold); margin-bottom: 10px; text-align: center; }
 .help p { font-size: .8rem; line-height: 1.65; margin-bottom: 8px; color: var(--paper); }
 .help .btn { display: block; margin: 12px auto 0; }
+
+/* ---------- 튜토리얼 ---------- */
+.tutorial {
+  position: fixed; inset: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+.tutorial:not(.hidden) { pointer-events: auto; }
+.tutorial[data-mode="slides"] {
+  background: rgba(10, 11, 17, .9);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.tut-slide {
+  background: var(--night2);
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  padding: 24px 20px;
+  max-width: 360px; width: 100%;
+  text-align: center;
+  animation: modal-in .25s ease;
+}
+.tut-dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 16px; }
+.tut-dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+.tut-dots span.on { background: var(--gold); }
+.tut-title { font-size: 1.15rem; color: var(--gold); margin-bottom: 14px; }
+.tut-body { font-size: .88rem; line-height: 1.7; color: var(--paper); }
+.tut-body b { color: var(--gold); }
+.tut-demo { display: flex; gap: 10px; justify-content: center; margin: 4px 0 16px; }
+.tut-btns { display: flex; gap: 8px; justify-content: center; margin-top: 20px; }
+.tut-btns .btn { flex: 1; }
+
+/* 상황 툴팁 (코치마크) */
+.tutorial[data-mode="coach"] { background: rgba(10, 11, 17, .45); }
+.coach-mark {
+  position: absolute;
+  left: 50%; transform: translateX(-50%);
+  max-width: 320px; width: calc(100% - 32px);
+  background: var(--night2);
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  padding: 14px 16px;
+  text-align: center;
+  animation: modal-in .2s ease;
+  box-shadow: 0 6px 24px rgba(0,0,0,.5);
+}
+.coach-mark p { font-size: .84rem; line-height: 1.6; color: var(--paper); margin-bottom: 10px; }
+.coach-mark p b { color: var(--gold); }
+.coach-mark .btn { padding: 7px 16px; font-size: .85rem; }
+.tut-highlight {
+  position: relative;
+  z-index: 21;
+  box-shadow: 0 0 0 3px var(--gold), 0 0 18px 4px rgba(201,162,39,.5);
+  border-radius: 8px;
+}

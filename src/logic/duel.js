@@ -46,7 +46,7 @@ export function drawStep(state, deps) {
 export function tsumoCheck(state, deps) {
   if (state.phase !== 'decide') return null;
   const best = deps.evalHand(state.hands[state.turn]);
-  return best && best.score > 0 ? best : null;
+  return best && best.declarable ? best : null;
 }
 
 export function declareTsumo(state, deps) {
@@ -94,7 +94,7 @@ export function stealCheck(state, deps) {
   const taker = other(state.lastDiscard.by);
   const hand8 = state.hands[taker].concat([state.lastDiscard.card]);
   const best = deps.evalHand(hand8);
-  return best && best.score > 0 ? { taker, best, hand8 } : null;
+  return best && best.declarable ? { taker, best, hand8 } : null;
 }
 
 export function declareSteal(state, deps) {
@@ -125,8 +125,8 @@ export function passSteal(state) {
 // 유국 (D34): 형식 텐파이인 쪽이 소점
 export function resolveExhaust(state, deps) {
   const tenpai = {
-    [P]: isFormalTenpai(state.hands[P], deps.cardMap, deps.bondSet, deps.allCardIds),
-    [A]: isFormalTenpai(state.hands[A], deps.cardMap, deps.bondSet, deps.allCardIds),
+    [P]: isFormalTenpai(state.hands[P], deps.cardMap, deps.bondSet, deps.allCardIds, deps.rules),
+    [A]: isFormalTenpai(state.hands[A], deps.cardMap, deps.bondSet, deps.allCardIds, deps.rules),
   };
   return {
     ...state,

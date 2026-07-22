@@ -15,6 +15,7 @@ import { initHandUI, renderHand } from './render/handUI.js';
 import { initCutin, hideOverlay, showStealPrompt, showRoundEnd, showMatchEnd } from './render/cutin.js';
 import { initHud, renderHud } from './render/hud.js';
 import { initControls } from './input/controls.js';
+import { initTutorial, maybeAutoStart, onState as tutorialOnState, restart as tutorialRestart } from './render/tutorial.js';
 
 async function loadJson(path) {
   const res = await fetch(path);
@@ -32,8 +33,9 @@ async function boot() {
   const cardMap = makeCardMap(cardsData);
   const bondSet = makeBondSet(bondsData);
   const allCardIds = cardsData.cards.map((c) => c.id);
-  const evalHand = makeYakuEvaluator(yakuData, cardMap, bondSet);
-  const deps = { cardMap, bondSet, allCardIds, evalHand };
+  const rules = { allowCrossGenreRun: true, minYakuToDeclare: 1, ...(cfg.rules || {}) };
+  const evalHand = makeYakuEvaluator(yakuData, cardMap, bondSet, rules);
+  const deps = { cardMap, bondSet, allCardIds, evalHand, rules };
   const dataBundle = { cfg, cardsData, bondsData, cardMap };
 
   initTable(dataBundle);
@@ -41,6 +43,7 @@ async function boot() {
   initCutin(dataBundle);
   initHud();
   initControls();
+  initTutorial();
 
   let rng = makeRng(Date.now() % 2147483647);
   let aiTimer = null;
@@ -51,6 +54,8 @@ async function boot() {
     renderHand(s);
   }
   subscribe(renderAll);
+  subscribe((s) => tutorialOnState(s));
+  on('intent:restart-tutorial', () => tutorialRestart());
 
   function startMatch() {
     const match = newMatch(cfg);
@@ -199,6 +204,7 @@ async function boot() {
   on('intent:rematch', () => startMatch());
 
   startMatch();
+  maybeAutoStart();
 }
 
 boot();

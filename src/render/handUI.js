@@ -9,6 +9,12 @@ let refs = null;
 let data = null;
 let deps = null;
 
+// 선언 가능(최소 역 충족) 해석만 인정하는 평가 래퍼
+function declEval(hand) {
+  const b = deps.evalHand(hand);
+  return b && b.declarable ? b : null;
+}
+
 export function initHandUI(dataBundle, logicDeps) {
   data = dataBundle;
   deps = logicDeps;
@@ -66,7 +72,7 @@ function renderAssist(s) {
 
   if (hand.length === 8) {
     const best = deps.evalHand(hand);
-    if (best && best.score > 0) {
+    if (best && best.declarable) {
       box.innerHTML =
         '<div class="assist-declare">완성! ' +
         best.yaku.map((y) => y.name).join(' + ') +
@@ -80,7 +86,7 @@ function renderAssist(s) {
       if (tried.has(hand[i])) continue;
       tried.add(hand[i]);
       const h7 = hand.slice(0, i).concat(hand.slice(i + 1));
-      const w = waitsFor(h7, deps.cardMap, deps.bondSet, deps.allCardIds, deps.evalHand);
+      const w = waitsFor(h7, deps.cardMap, deps.bondSet, deps.allCardIds, declEval, deps.rules);
       if (w.length > 0) tenpaiDiscards.push({ discard: hand[i], waits: w });
     }
     if (tenpaiDiscards.length > 0) {
@@ -96,7 +102,7 @@ function renderAssist(s) {
   }
 
   // 손패 7장 (상대 차례 등): 텐파이면 대기 카드와 남은 장수 표시
-  const waits = waitsFor(hand, deps.cardMap, deps.bondSet, deps.allCardIds, deps.evalHand);
+  const waits = waitsFor(hand, deps.cardMap, deps.bondSet, deps.allCardIds, declEval, deps.rules);
   if (waits.length === 0) { box.innerHTML = ''; return; }
   const visible = [...hand, ...round.discards.player, ...round.discards.ai];
   const counts = unseenCounts(
@@ -120,7 +126,7 @@ function renderActions(s) {
   if (round.turn !== 'player' || round.phase !== 'decide') return;
 
   const best = deps.evalHand(round.hands.player);
-  if (best && best.score > 0) {
+  if (best && best.declarable) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.id = 'btn-declare';

@@ -5,6 +5,16 @@
   "targetScore": 10,
   "fixedRounds": 4,
   "tenpaiScore": 1,
-  "ai": { "thinkMsMin": 350, "thinkMsMax": 900 },
-  "tempo": { "drawMs": 250, "cutinMs": 1600 }
+  "ai": {
+    "thinkMsMin": 350,
+    "thinkMsMax": 900
+  },
+  "tempo": {
+    "drawMs": 250,
+    "cutinMs": 1600
+  },
+  "rules": {
+    "allowCrossGenreRun": false,
+    "minYakuToDeclare": 2
+  }
 }

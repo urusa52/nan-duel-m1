@@ -22,6 +22,7 @@ for (const m of [
   '../src/core/store.js', '../src/core/eventBus.js',
   '../src/render/table.js', '../src/render/handUI.js',
   '../src/render/cutin.js', '../src/render/hud.js', '../src/render/tutorial.js',
+  '../src/render/abilityUI.js',
   '../src/input/controls.js',
 ]) {
   try {
@@ -38,7 +39,7 @@ const html = read('index.html');
 const jsFiles = [
   'src/main.js', 'src/render/table.js', 'src/render/handUI.js',
   'src/render/cutin.js', 'src/render/hud.js', 'src/input/controls.js',
-  'src/render/tutorial.js',
+  'src/render/tutorial.js', 'src/render/abilityUI.js',
 ];
 const dynamicIds = ['btn-declare', 'btn-discard', 'btn-steal', 'btn-pass-steal', 'btn-next', 'btn-rematch'];
 const idRefs = new Set();

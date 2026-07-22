@@ -286,3 +286,42 @@ body {
 @keyframes warn-pulse { from { opacity: .65; } to { opacity: 1; } }
 /* 상대가 텐파이면 상대 영역 전체를 살짝 물들여 시선을 끈다 */
 .ai-zone.danger .hand-row.backs { box-shadow: 0 0 0 1px var(--danger); border-radius: 6px; padding: 3px; }
+
+/* ---------- 특수 능력 (예언서·각색·복선) ---------- */
+.ability-bar {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  justify-content: center;
+  margin: 4px 0 2px;
+}
+.ability-btn {
+  background: var(--panel);
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  border-radius: 14px;
+  padding: 5px 12px;
+  font-size: .78rem;
+}
+.ability-btn.used { opacity: .38; border-color: var(--line); color: var(--paper-dim); }
+.draw-btn { border-color: var(--paper-dim); color: var(--paper); }
+.ability-panel {
+  border: 1px solid var(--gold);
+  background: rgba(201, 162, 39, .06);
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin: 6px 0 2px;
+}
+.ability-panel.hidden { display: none; }
+.ap-title { font-size: .78rem; color: var(--gold); margin-bottom: 6px; text-align: center; }
+.peek-row, .pick-row, .genre-pick {
+  display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; align-items: center;
+}
+.peek-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.peek-order { font-size: .6rem; color: var(--paper-dim); }
+.card.pick { box-shadow: 0 0 0 1px var(--gold); }
+.genre-btn { padding: 6px 14px; font-size: .82rem; border-radius: 10px; color: var(--paper); border: 1px solid var(--line); }
+.genre-btn.g-mu { background: var(--g-mu); }
+.genre-btn.g-sf { background: var(--g-sf); }
+.genre-btn.g-fa { background: var(--g-fa); }
+.genre-btn.g-ro { background: var(--g-ro); }
+.genre-btn.g-ho { background: var(--g-ho); }
+.ability-panel .btn.tiny { margin-top: 8px; }

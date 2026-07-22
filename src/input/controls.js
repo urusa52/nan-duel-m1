@@ -46,4 +46,37 @@ export function initControls() {
       document.getElementById('help').classList.add('hidden');
     }
   });
+
+  // 능력 바 (예언서/복선/각색/뽑기) — 동적 버튼이라 위임 처리
+  document.getElementById('ability-bar').addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn || btn.disabled) return;
+    if (btn.id === 'btn-draw') { emit('intent:draw'); return; }
+    const ab = btn.dataset.ability;
+    if (ab === 'foresight') emit('intent:foresight');
+    else if (ab === 'foreshadow') emit('intent:foreshadow-start');
+    else if (ab === 'adapt') emit('intent:adapt-start');
+  });
+
+  // 능력 트레이 (예언서 닫기 / 복선 카드선택 / 각색 장르선택 / 취소)
+  document.getElementById('ability-panel').addEventListener('click', (e) => {
+    if (e.target.id === 'btn-ability-close' || e.target.id === 'btn-ability-cancel') {
+      emit('intent:ability-cancel');
+      return;
+    }
+    const disc = e.target.closest('[data-discard-index]');
+    if (disc) {
+      const s = getState();
+      setState({ ui: { ...s.ui, foreshadowIndex: Number(disc.dataset.discardIndex) } });
+      emit('intent:foreshadow-commit');
+      return;
+    }
+    const gb = e.target.closest('[data-genre]');
+    if (gb) {
+      const s = getState();
+      setState({ ui: { ...s.ui, adaptGenre: gb.dataset.genre } });
+      emit('intent:adapt-commit');
+      return;
+    }
+  });
 }

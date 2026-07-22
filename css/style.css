@@ -1,0 +1,202 @@
+/* style.css — 밤 서고 팔레트 (본편 계승), 모바일 우선 */
+:root {
+  --night: #14161f;
+  --night2: #1c1f2b;
+  --panel: #21242f;
+  --line: #33374a;
+  --paper: #e8e0cf;
+  --paper-dim: #b7ae9a;
+  --gold: #c9a227;
+  --danger: #b0413e;
+  --g-mu: #a3543f;
+  --g-sf: #3d7a8a;
+  --g-fa: #6b5aa0;
+  --g-ro: #b0607a;
+  --g-ho: #4a5a45;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  background: var(--night);
+  color: var(--paper);
+  font-family: "Noto Serif KR", "Nanum Myeongjo", serif;
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- HUD ---------- */
+#hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--night2);
+}
+.hud-side { display: flex; flex-direction: column; align-items: center; min-width: 52px; }
+.hud-label { font-size: .68rem; color: var(--paper-dim); }
+.hud-score { font-size: 1.35rem; color: var(--gold); }
+.hud-mid { text-align: center; }
+.hud-title { font-size: .85rem; letter-spacing: .04em; }
+.hud-round { font-size: .7rem; color: var(--paper-dim); margin-top: 2px; }
+
+/* ---------- 구역 ---------- */
+#table { flex: 1; display: flex; flex-direction: column; padding: 8px 10px 14px; gap: 8px; overflow-y: auto; }
+.zone-head {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: .75rem; color: var(--paper-dim); margin-bottom: 6px;
+}
+.turn-badge { font-size: .7rem; padding: 2px 8px; border-radius: 10px; border: 1px solid var(--line); }
+.turn-badge.mine { color: var(--gold); border-color: var(--gold); }
+
+/* ---------- 카드 ---------- */
+.card {
+  width: 46px; height: 62px;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,.4);
+  color: #fff;
+  font-family: inherit;
+  display: inline-flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 2px;
+  position: relative;
+  flex: 0 0 auto;
+}
+.card .c-stage { font-size: 1.05rem; font-weight: 700; line-height: 1; }
+.card .c-genre { font-size: .58rem; opacity: .9; }
+.card.small { width: 34px; height: 46px; }
+.card.small .c-stage { font-size: .85rem; }
+.card.small .c-genre { font-size: .5rem; }
+.card.back { background: var(--panel); border-color: var(--line); }
+.card.back::after { content: "書"; color: var(--line); font-size: .9rem; }
+.g-mu { background: var(--g-mu); }
+.g-sf { background: var(--g-sf); }
+.g-fa { background: var(--g-fa); }
+.g-ro { background: var(--g-ro); }
+.g-ho { background: var(--g-ho); }
+
+.card.tappable { cursor: pointer; }
+.card.tappable:active { transform: translateY(-2px); }
+.card.selected { transform: translateY(-8px); box-shadow: 0 0 0 2px var(--gold); }
+.card.drawn { box-shadow: 0 0 0 2px var(--paper-dim); }
+.card.drawn.selected { box-shadow: 0 0 0 2px var(--gold); }
+.card.discard { opacity: .75; }
+.card.just-discarded { opacity: 1; box-shadow: 0 0 0 2px var(--gold); animation: pulse .9s ease infinite alternate; }
+.card.stolen { box-shadow: 0 0 0 2px var(--gold); }
+@keyframes pulse { from { box-shadow: 0 0 0 2px var(--gold); } to { box-shadow: 0 0 10px 3px var(--gold); } }
+
+/* ---------- 손패·버림패 ---------- */
+.hand-row { display: flex; gap: 5px; flex-wrap: nowrap; overflow-x: auto; padding: 2px 0; }
+.hand-row.mine { justify-content: center; flex-wrap: wrap; min-height: 66px; }
+.hand-row.backs { gap: 3px; }
+.discard-grid {
+  display: flex; flex-wrap: wrap; gap: 4px;
+  min-height: 24px;
+  padding: 6px;
+  background: var(--night2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+/* ---------- 산 구역 ---------- */
+.wall-zone { }
+.wall-info {
+  display: flex; align-items: center; gap: 10px;
+  font-size: .8rem; color: var(--paper-dim);
+}
+.wall-info b { color: var(--paper); font-size: 1rem; }
+.count-panel {
+  margin-top: 8px;
+  background: var(--night2); border: 1px solid var(--line); border-radius: 8px;
+  padding: 8px 10px;
+  font-size: .78rem;
+}
+.cp-row { display: grid; grid-template-columns: 60px repeat(4, 1fr); gap: 2px; align-items: center; padding: 2px 0; }
+.cp-head { color: var(--paper-dim); font-size: .68rem; text-align: center; }
+.cp-head span { text-align: center; }
+.cp-genre { padding: 1px 6px; border-radius: 4px; color: #fff; font-size: .68rem; text-align: center; }
+.cp-n { text-align: center; color: var(--paper); }
+.cp-n.zero { color: var(--danger); }
+.cp-note { margin-top: 6px; font-size: .62rem; color: var(--paper-dim); }
+
+/* ---------- 자동 판정 보조 (D33) ---------- */
+.assist { min-height: 22px; font-size: .8rem; text-align: center; }
+.assist-declare { color: var(--gold); animation: pulse-text 1s ease infinite alternate; }
+.assist-tenpai { color: var(--gold); }
+.assist-hint { color: var(--paper-dim); }
+.assist-dim { color: var(--paper-dim); opacity: .7; }
+.wait-chip {
+  display: inline-block; padding: 1px 7px; border-radius: 9px;
+  color: #fff; font-size: .7rem; margin: 1px 2px;
+}
+.wait-chip b { color: #fff; }
+@keyframes pulse-text { from { opacity: .8; } to { opacity: 1; } }
+
+.card-info { font-size: .72rem; color: var(--paper-dim); text-align: center; min-height: 16px; }
+
+/* ---------- 버튼 ---------- */
+.actions { display: flex; gap: 8px; justify-content: center; min-height: 44px; }
+.btn {
+  font-family: inherit; font-size: .95rem;
+  padding: 10px 18px;
+  background: var(--panel); color: var(--paper);
+  border: 1px solid var(--line); border-radius: 6px;
+  cursor: pointer;
+}
+.btn.declare {
+  color: var(--gold); border-color: var(--gold);
+  background: rgba(201, 162, 39, .1);
+}
+.btn.tiny { font-size: .7rem; padding: 4px 10px; color: var(--paper-dim); }
+
+/* ---------- 오버레이·모달 ---------- */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(10, 11, 17, .82);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  z-index: 10;
+}
+.hidden { display: none !important; }
+.modal {
+  background: var(--night2);
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  padding: 22px 20px;
+  max-width: 360px; width: 100%;
+  max-height: 86vh; overflow-y: auto;
+  text-align: center;
+  animation: modal-in .25s ease;
+}
+@keyframes modal-in { from { transform: scale(.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.modal-btns { display: flex; gap: 10px; justify-content: center; margin-top: 14px; }
+
+.steal-title { font-size: 1.5rem; color: var(--gold); letter-spacing: .1em; }
+.steal-desc { font-size: .85rem; color: var(--paper-dim); margin-top: 10px; line-height: 1.5; }
+.steal-score { font-size: .95rem; margin-top: 8px; }
+
+.re-type { font-size: 1.4rem; color: var(--gold); letter-spacing: .08em; }
+.roundend.lose .re-type { color: var(--paper-dim); }
+.re-who { font-size: .82rem; color: var(--paper-dim); margin: 8px 0 12px; }
+.re-hand { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.re-group { display: inline-flex; gap: 3px; padding: 3px; border: 1px dashed var(--line); border-radius: 6px; }
+.re-yaku {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+  font-size: .85rem; padding: 3px 4px;
+}
+.re-yaku small { color: var(--paper-dim); font-size: .65rem; flex: 1; text-align: left; }
+.re-yaku b { color: var(--gold); }
+.re-score { font-size: 1.7rem; color: var(--gold); margin: 10px 0 4px; }
+.ex-line { font-size: .9rem; margin: 6px 0; }
+.roundend .btn, .matchend .btn { margin-top: 12px; }
+
+.me-title { font-size: 1.15rem; color: var(--gold); line-height: 1.5; }
+.matchend.lose .me-title { color: var(--paper); }
+.me-desc { font-size: .8rem; color: var(--paper-dim); margin-top: 8px; }
+.me-score { font-size: 1.6rem; margin-top: 12px; }
+
+.help { text-align: left; }
+.help-title { font-size: 1.05rem; color: var(--gold); margin-bottom: 10px; text-align: center; }
+.help p { font-size: .8rem; line-height: 1.65; margin-bottom: 8px; color: var(--paper); }
+.help .btn { display: block; margin: 12px auto 0; }

@@ -1,0 +1,10 @@
+{
+  "handSize": 8,
+  "copiesPerCard": 3,
+  "matchMode": "race",
+  "targetScore": 10,
+  "fixedRounds": 4,
+  "tenpaiScore": 1,
+  "ai": { "thinkMsMin": 350, "thinkMsMax": 900 },
+  "tempo": { "drawMs": 250, "cutinMs": 1600 }
+}

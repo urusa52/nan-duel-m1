@@ -34,6 +34,9 @@ async function boot() {
   const bondSet = makeBondSet(bondsData);
   const allCardIds = cardsData.cards.map((c) => c.id);
   const rules = { allowCrossGenreRun: true, minYakuToDeclare: 1, ...(cfg.rules || {}) };
+  // 난이도 프리셋에서 AI 전략을 파생 (단일 진실원천). difficulty가 없으면 normal.
+  const presets = cfg.difficultyPresets || {};
+  const aiStrategy = presets[cfg.difficulty] || presets.normal || {};
   const evalHand = makeYakuEvaluator(yakuData, cardMap, bondSet, rules);
   const declEval = (h) => { const b = evalHand(h); return b && b.declarable ? b : null; };
   const deps = { cardMap, bondSet, allCardIds, evalHand, rules, waitsFor, declEval };
@@ -95,7 +98,13 @@ async function boot() {
         aiTimer = setTimeout(() => {
           const cur = getState().round;
           if (!cur || cur.phase !== 'decide' || cur.turn !== A) return;
-          const act = aiChooseAction(cur.hands[A], deps);
+          const m = getState().match;
+          const situation = {
+            myScore: m.scores.ai, oppScore: m.scores.player,
+            targetScore: cfg.targetScore, wallLeft: cur.wall.length,
+            strategy: aiStrategy,
+          };
+          const act = aiChooseAction(cur.hands[A], deps, situation);
           if (act.action === 'declare') {
             setState({ round: declareTsumo(cur, deps) });
             onRoundEnd();

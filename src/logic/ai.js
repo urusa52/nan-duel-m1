@@ -25,9 +25,14 @@ function potential(hand7, cardMap, bondSet) {
 }
 
 // hand8 → { action: 'declare' } | { action: 'discard', card }
-export function aiChooseAction(hand8, deps) {
+// situation(선택): { myScore, oppScore, targetScore, wallLeft, strategy } 매치 상황.
+//   주면 "이길 수 있으면 선언, 뒤지면 참고 큰 손" 전략이 켜진다. 없으면 기존 동작(즉시 선언).
+export function aiChooseAction(hand8, deps, situation = null) {
   const best = deps.evalHand(hand8);
-  if (best && best.declarable) return { action: 'declare' };
+  if (best && best.declarable) {
+    if (shouldDeclare(best, situation, deps)) return { action: 'declare' };
+    // 참기로 함 → 선언 안 하고 버리기로 진행 (더 큰 손을 노린다)
+  }
 
   let bestChoice = null;
   const tried = new Set(); // 같은 종류는 한 번만 평가
@@ -58,6 +63,31 @@ export function aiChooseAction(hand8, deps) {
     }
   }
   return { action: 'discard', card: bestChoice.card };
+}
+
+// 선언 여부 전략 판단. situation이 없으면 항상 선언(기존 동작 보존).
+// 기준(유저 결정): "이번 완성으로 상대를 이길 수 있으면 선언, 아니면 뒤질 때 참고 큰 손".
+// 안전장치: 산이 거의 마르면 있는 완성이라도 선언(유국 방지).
+function shouldDeclare(best, situation, deps) {
+  if (!situation) return true;
+  const s = situation.strategy || {};
+  const patienceOff = s.patience === false; // 성향: 항상 즉시 선언(속공형)
+  if (patienceOff) return true;
+
+  const myAfter = situation.myScore + best.score;
+  // 1) 이번 완성으로 매치를 끝낼 수 있으면(=목표 도달) 무조건 선언
+  if (myAfter >= situation.targetScore) return true;
+  // 2) 산이 얼마 안 남으면 참지 않는다 (유국 방지 안전장치)
+  if (situation.wallLeft <= (s.giveUpWall != null ? s.giveUpWall : 6)) return true;
+  // 3) 내가 앞서거나 비슷하면 굳히기 — 지금 선언
+  const behind = situation.oppScore - situation.myScore;
+  const patienceGap = s.patienceGap != null ? s.patienceGap : 3; // 이만큼 뒤지면 참는다
+  if (behind < patienceGap) return true;
+  // 4) 여기까지 오면: 뒤지고 있고 산도 남았다 → 작은 완성은 참고 큰 손을 노린다.
+  //    단 이미 충분히 큰 손이면 선언(무한정 참기 방지).
+  const bigEnough = s.bigEnough != null ? s.bigEnough : 6;
+  if (best.score >= bigEnough) return true;
+  return false; // 참는다
 }
 
 // 운명 뺏기 판단: v1은 가능하면 무조건 뺏는다

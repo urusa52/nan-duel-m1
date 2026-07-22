@@ -17,5 +17,22 @@
     "allowCrossGenreRun": false,
     "minYakuToDeclare": 2
   },
-  "showOpponentTenpai": true
+  "showOpponentTenpai": true,
+  "difficulty": "normal",
+  "difficultyPresets": {
+    "easy": {
+      "patience": false,
+      "_note": "늘 즉시 선언 — 검증됨, 초보용"
+    },
+    "normal": {
+      "patienceGap": 3,
+      "bigEnough": 6,
+      "giveUpWall": 6,
+      "_note": "기본 균형"
+    },
+    "hard": {
+      "patience": false,
+      "_note": "미구현 스텁 — 현재 normal과 동급. 참기는 1:1에서 약화 확인(sim_strategy), 다른 방식으로 재설계 필요"
+    }
+  }
 }

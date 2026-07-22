@@ -15,7 +15,8 @@ const SLIDES = [
   },
   {
     title: '완성이란',
-    body: '손패 8장이 <b>세트 3장 × 2 + 짝 2장</b>을 이루면 완성입니다. 세트는 <b>같은 장르 안에서 이어지는 이야기 3장</b> 또는 <b>같은 장르 3장</b>. 짝은 같은 영웅이나 인연 짝 2장.',
+    body: '손패 8장이 <b>세트 3장 × 2 + 짝 2장</b>을 이루면 완성입니다. 아래 예시처럼 세 묶음으로 나뉘면 이야기가 완성돼요.',
+    example: true,
   },
   {
     title: '수싸움',
@@ -109,6 +110,7 @@ function gotoSlide(i) {
 function renderSlide() {
   const s = SLIDES[curSlide];
   const demo = s.demo ? demoCardsHtml() : '';
+  const example = s.example ? exampleHandHtml() : '';
   const last = curSlide === SLIDES.length - 1;
   refs.root.innerHTML =
     '<div class="tut-slide">' +
@@ -118,12 +120,51 @@ function renderSlide() {
     '<p class="tut-title">' + s.title + '</p>' +
     demo +
     '<p class="tut-body">' + s.body + '</p>' +
+    example +
     '<div class="tut-btns">' +
     (curSlide > 0 ? '<button type="button" class="btn" data-act="prev">이전</button>' : '') +
     '<button type="button" class="btn" data-act="skip">건너뛰기</button>' +
     '<button type="button" class="btn declare" data-act="' + (last ? 'start' : 'next') + '">' +
     (last ? '대국 시작' : '다음') + '</button>' +
     '</div></div>';
+}
+
+// 완성 손패 정적 예시: 세트[무협 기·시·각] + 세트[SF 같은장르] + 짝[인연]
+// 학습용 표시 전용 타일 — 실제 카드 로직과 무관.
+function exampleHandHtml() {
+  const groups = [
+    {
+      label: '세트 ① — 서사 (같은 장르 연속)',
+      cards: [
+        { g: 'mu', s: '기', n: '무협' },
+        { g: 'mu', s: '시', n: '무협' },
+        { g: 'mu', s: '각', n: '무협' },
+      ],
+    },
+    {
+      label: '세트 ② — 장르 (같은 장르 3장)',
+      cards: [
+        { g: 'sf', s: '기', n: 'SF' },
+        { g: 'sf', s: '각', n: 'SF' },
+        { g: 'sf', s: '승', n: 'SF' },
+      ],
+    },
+    {
+      label: '짝 — 인연',
+      cards: [
+        { g: 'ro', s: '각', n: '로맨스' },
+        { g: 'mu', s: '각', n: '무협' },
+      ],
+    },
+  ];
+  const tile = (c) =>
+    '<span class="card small g-' + c.g + '"><span class="c-stage">' + c.s +
+    '</span><span class="c-genre">' + c.n + '</span></span>';
+  return '<div class="tut-example">' + groups.map((grp) =>
+    '<div class="tut-ex-group">' +
+    '<div class="tut-ex-cards">' + grp.cards.map(tile).join('') + '</div>' +
+    '<span class="tut-ex-label">' + grp.label + '</span>' +
+    '</div>').join('<span class="tut-ex-plus">+</span>') + '</div>';
 }
 
 function demoCardsHtml() {

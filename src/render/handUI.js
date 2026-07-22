@@ -26,6 +26,17 @@ export function initHandUI(dataBundle, logicDeps) {
   };
 }
 
+// 손패 표시 정렬 우선순위: 장르(cards.json 정의 순서: 무협·SF·판타지·로맨스·호러) → 단계(기·승·전·결).
+// 표시 순서만 위한 것 — 게임 로직(배열 순서)은 건드리지 않는다.
+function genreRank(genreKey) {
+  const i = data.cardsData.genres.findIndex((g) => g.key === genreKey);
+  return i < 0 ? 99 : i;
+}
+function sortValue(id) {
+  const c = data.cardMap[id];
+  return genreRank(c.genre) * 10 + c.stage;
+}
+
 export function renderHand(s) {
   const round = s.round;
   if (!round) return;
@@ -33,9 +44,12 @@ export function renderHand(s) {
   const myDecide = round.turn === 'player' && round.phase === 'decide';
 
   refs.myHand.innerHTML = '';
-  hand.forEach((id, i) => {
+  // 표시용 정렬 뷰 — 장르→단계로 보기 좋게 정렬하되 "원래 인덱스"를 보존한다.
+  // 탭·버리기·각색은 전부 dataset.index(=원래 배열 인덱스) 기준이라 게임 로직엔 영향 0.
+  const view = hand.map((id, i) => ({ id, i })).sort((a, b) => sortValue(a.id) - sortValue(b.id));
+  view.forEach(({ id, i }) => {
     const el = cardEl(id);
-    el.dataset.index = i;
+    el.dataset.index = i; // 원래 손패 배열의 인덱스 (정렬된 표시 위치가 아님)
     if (myDecide) {
       el.classList.add('tappable');
       if (i === hand.length - 1 && round.lastDrawn === id) el.classList.add('drawn');

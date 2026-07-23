@@ -21,6 +21,7 @@
   "abilities": {
     "enabled": ["foresight", "adapt", "foreshadow"],
     "shared": true,
+    "aiUse": true,
     "uses": { "foresight": 1, "adapt": 1, "foreshadow": 1 },
     "foresight": { "peek": 3 },
     "adapt": { "keepStage": true },

@@ -64,8 +64,12 @@ export function makeYakuEvaluator(yakuData, cardMap, bondSet, rules = DEFAULT_RU
         best = { score, yaku: list, decomp: d };
       }
     }
-    // 선언 자격 (D35 + 난이도 레버): 역 개수가 minYakuToDeclare 이상
-    if (best) best.declarable = best.yaku.length >= rules.minYakuToDeclare && best.score > 0;
+    // 선언 자격 (D35 + 난이도 레버): 역 개수가 minYakuToDeclare 이상.
+    // 단, 역만(불후의 명작)은 단독 역이라도 선언 가능 (역만은 최소역 조건 예외).
+    if (best) {
+      const isYakuman = best.yaku.some((y) => y.yakuman);
+      best.declarable = (isYakuman || best.yaku.length >= rules.minYakuToDeclare) && best.score > 0;
+    }
     return best;
   };
 }

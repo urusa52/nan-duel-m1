@@ -11,7 +11,7 @@ import {
 } from './logic/duel.js';
 import { initAbilityState, canUse } from './logic/abilities.js';
 import { newMatch, applyRoundResult } from './logic/match.js';
-import { aiChooseAction, aiWantsSteal } from './logic/ai.js';
+import { aiChooseAction, aiWantsSteal, aiChooseAbility } from './logic/ai.js';
 import { initTable, renderTable } from './render/table.js';
 import { initHandUI, renderHand } from './render/handUI.js';
 import { initCutin, hideOverlay, showStealPrompt, showRoundEnd, showMatchEnd } from './render/cutin.js';
@@ -57,7 +57,7 @@ async function boot() {
   initTutorial();
 
   // 국/매치 시작 때 능력 관련 ui를 깨끗이 비우는 기본값
-  const ABILITY_UI_RESET = { abilityMode: null, foresightPeek: null, adaptIndex: null, adaptGenre: null, foreshadowIndex: null };
+  const ABILITY_UI_RESET = { abilityMode: null, foresightPeek: null, adaptIndex: null, adaptGenre: null, foreshadowIndex: null, aiFlash: null };
 
   let rng = makeRng(Date.now() % 2147483647);
   let aiTimer = null;
@@ -113,22 +113,30 @@ async function boot() {
       if (round.turn === A) {
         clearTimeout(aiTimer);
         aiTimer = setTimeout(() => {
-          const cur = getState().round;
-          if (!cur || cur.phase !== 'decide' || cur.turn !== A) return;
-          const m = getState().match;
-          const situation = {
-            myScore: m.scores.ai, oppScore: m.scores.player,
-            targetScore: cfg.targetScore, wallLeft: cur.wall.length,
-            strategy: aiStrategy,
-          };
-          const act = aiChooseAction(cur.hands[A], deps, situation);
-          if (act.action === 'declare') {
-            setState({ round: declareTsumo(cur, deps) });
-            onRoundEnd();
-          } else {
-            setState({ round: discardStep(cur, act.card) });
-            advance();
+          const cur0 = getState().round;
+          if (!cur0 || cur0.phase !== 'decide' || cur0.turn !== A) return;
+          // 능력 사용 시도 (v1: 즉시 완성되면 각색/복선). 잠깐 표시 후 선언.
+          // config.abilities.aiUse=false면 AI는 능력을 안 쓴다(밸런스 레버).
+          const aiUse = !cfg.abilities || cfg.abilities.aiUse !== false;
+          const choice = aiUse ? aiChooseAbility(cur0, deps) : null;
+          if (choice) {
+            let cur = cur0;
+            let label = '';
+            if (choice.id === 'adapt') { cur = useAdapt(cur0, deps, choice.index, choice.genre); label = '각색'; }
+            else if (choice.id === 'foreshadow') { cur = useForeshadow(cur0, deps, choice.discardIndex); label = '복선'; }
+            setState({ round: cur, ui: { ...getState().ui, aiFlash: label } });
+            clearTimeout(aiTimer);
+            aiTimer = setTimeout(() => {
+              setState({ ui: { ...getState().ui, aiFlash: null } });
+              const c2 = getState().round;
+              if (!c2 || c2.phase !== 'decide' || c2.turn !== A) return;
+              const best = deps.evalHand(c2.hands[A]);
+              if (best && best.declarable) { setState({ round: declareTsumo(c2, deps) }); onRoundEnd(); }
+              else aiDecideAct(); // 안전장치 (정상 흐름에선 도달 안 함)
+            }, 850);
+            return;
           }
+          aiDecideAct();
         }, aiThink());
       }
       // 플레이어면 입력 대기 (버튼은 handUI가 그림)
@@ -170,6 +178,26 @@ async function boot() {
   function aiThink() {
     const { thinkMsMin, thinkMsMax } = cfg.ai;
     return thinkMsMin + Math.random() * (thinkMsMax - thinkMsMin);
+  }
+
+  // AI가 decide에서 실제 행동(선언 or 버리기) 수행. 능력 사용 후/미사용 공통 경로.
+  function aiDecideAct() {
+    const cur = getState().round;
+    if (!cur || cur.phase !== 'decide' || cur.turn !== A) return;
+    const m = getState().match;
+    const situation = {
+      myScore: m.scores.ai, oppScore: m.scores.player,
+      targetScore: cfg.targetScore, wallLeft: cur.wall.length,
+      strategy: aiStrategy,
+    };
+    const act = aiChooseAction(cur.hands[A], deps, situation);
+    if (act.action === 'declare') {
+      setState({ round: declareTsumo(cur, deps) });
+      onRoundEnd();
+    } else {
+      setState({ round: discardStep(cur, act.card) });
+      advance();
+    }
   }
 
   function onRoundEnd() {

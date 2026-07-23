@@ -26,6 +26,7 @@ export function initTable(dataBundle, logicDeps) {
     turnBadge: document.getElementById('turn-badge'),
     countPanel: document.getElementById('count-panel'),
     aiWarn: document.getElementById('ai-warn'),
+    aiFlash: document.getElementById('ai-flash'),
   };
 }
 
@@ -64,6 +65,13 @@ export function renderTable(s) {
   }
 
   renderAiWarning(s);
+
+  // 라이벌이 능력을 쓰면 잠깐 표시
+  if (refs.aiFlash) {
+    const f = s.ui && s.ui.aiFlash;
+    refs.aiFlash.textContent = f ? '라이벌: ' + f : '';
+    refs.aiFlash.className = 'ai-flash-msg' + (f ? ' on' : '');
+  }
 
   // 버림패 (공개 — 수읽기의 재료)
   renderDiscards(refs.aiDiscards, round.discards.ai, s);

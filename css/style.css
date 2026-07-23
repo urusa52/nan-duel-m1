@@ -431,3 +431,12 @@ body {
 
 /* 코치마크 화면 중앙 (손패 가림 방지) */
 .coach-mark.centered { top: 50%; transform: translate(-50%, -50%); }
+
+/* 라이벌 능력 사용 표시 */
+.ai-flash-msg { font-size: 0; }
+.ai-flash-msg.on {
+  font-size: .62rem; color: var(--gold);
+  border: 1px solid var(--gold); border-radius: 10px; padding: 2px 8px;
+  background: rgba(201, 162, 39, .1);
+  animation: warn-pulse 1s ease infinite alternate;
+}

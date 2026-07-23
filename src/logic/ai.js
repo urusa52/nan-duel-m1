@@ -94,3 +94,46 @@ function shouldDeclare(best, situation, deps) {
 export function aiWantsSteal() {
   return true;
 }
+
+// AI 능력 사용 v1 (규칙 기반, 순수함수).
+// 방침: "이번 턴에 즉시 완성되는 경우에만" 각색/복선을 쓴다 — 안전하고 판단이 명료.
+//   · 각색: 손패 한 장의 장르를 바꿔 선언 가능해지면
+//   · 복선: 뽑은 카드를 무르고 버림패를 회수해 선언 가능해지면
+// 예언서(정보형)는 결정적 AI엔 이득이 작아 v1에서는 쓰지 않는다.
+// 반환: { id:'adapt', index, genre } | { id:'foreshadow', discardIndex } | null
+export function aiChooseAbility(round, deps) {
+  const who = round.turn;
+  const ab = (round.abilities && round.abilities[who]) || {};
+  const hand = round.hands[who];
+  if (!hand || hand.length !== 8) return null;
+  // 이미 완성 가능하면 능력 낭비 안 함 — 그냥 선언한다.
+  const already = deps.evalHand(hand);
+  if (already && already.declarable) return null;
+
+  if ((ab.adapt || 0) > 0) {
+    const genres = [...new Set(deps.allCardIds.map((id) => id.split('-')[0]))];
+    for (let i = 0; i < hand.length; i++) {
+      const cur = deps.cardMap[hand[i]];
+      for (const g of genres) {
+        if (g === cur.genre) continue;
+        const newId = g + '-' + cur.stage;
+        if (!deps.cardMap[newId]) continue;
+        const test = hand.slice();
+        test[i] = newId;
+        const best = deps.evalHand(test);
+        if (best && best.declarable) return { id: 'adapt', index: i, genre: g };
+      }
+    }
+  }
+
+  if ((ab.foreshadow || 0) > 0 && round.discards[who].length > 0 && round.lastDrawn != null) {
+    const base = hand.slice();
+    base.pop(); // 방금 뽑은 카드(끝) 무름
+    for (let d = 0; d < round.discards[who].length; d++) {
+      const test = base.concat([round.discards[who][d]]);
+      const best = deps.evalHand(test);
+      if (best && best.declarable) return { id: 'foreshadow', discardIndex: d };
+    }
+  }
+  return null;
+}

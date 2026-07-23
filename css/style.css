@@ -394,3 +394,40 @@ body {
 .you .hand-row.mine .card .c-stage { font-size: 1.3rem; }
 .you .hand-row.mine .card .c-genre { font-size: .6rem; }
 .you .ability-bar { margin: 0; }
+
+/* ---------- 완성 컷인 연출 (a+b: 모든 완성 연출 + 역만/고득점 강화) ---------- */
+.cutin { position: relative; text-align: center; cursor: pointer; user-select: none; padding: 20px 30px; }
+.cutin-sub { font-size: 1rem; letter-spacing: .32em; color: var(--paper-dim); animation: cut-sub .5s ease both; }
+.cutin-main { font-size: 2.6rem; color: var(--gold); letter-spacing: .05em; margin: 8px 0 6px;
+  animation: cut-main .55s cubic-bezier(.2,.9,.3,1.3) both; }
+.cutin-score { font-size: 1.2rem; color: var(--paper); animation: cut-sub .75s ease both; }
+@keyframes cut-main { from { transform: scale(.55); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes cut-sub { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.cutin.tier-big .cutin-main { font-size: 3rem; text-shadow: 0 0 18px rgba(201,162,39,.6); }
+.cutin.tier-yakuman .cutin-sub { color: var(--gold); }
+.cutin.tier-yakuman .cutin-main { font-size: 3.5rem;
+  animation: cut-main .6s cubic-bezier(.2,.9,.3,1.3) both, yk-glow 1.2s ease infinite alternate .6s; }
+@keyframes yk-glow {
+  from { text-shadow: 0 0 16px rgba(201,162,39,.55); }
+  to { text-shadow: 0 0 34px rgba(201,162,39,1), 0 0 64px rgba(201,162,39,.5); }
+}
+.cutin-rays { position: absolute; inset: -60%; z-index: -1; border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(201,162,39,.14), transparent 12deg, transparent 30deg, rgba(201,162,39,.14) 42deg);
+  animation: rays-spin 10s linear infinite; }
+.cutin.tier-yakuman .cutin-rays {
+  background: conic-gradient(from 0deg, rgba(201,162,39,.24), transparent 10deg, transparent 24deg, rgba(201,162,39,.24) 34deg);
+  animation-duration: 7s; }
+@keyframes rays-spin { to { transform: rotate(360deg); } }
+
+/* ---------- 역 예시 툴팁 (맞출 수 있는 패) ---------- */
+.yaku-tip { position: fixed; z-index: 30; max-width: 260px;
+  background: var(--night2); border: 1px solid var(--gold); border-radius: 10px;
+  padding: 9px 11px; box-shadow: 0 8px 24px rgba(0,0,0,.55); pointer-events: none; }
+.yaku-tip .yt-title { font-size: .74rem; color: var(--gold); margin-bottom: 1px; }
+.yaku-tip .yt-sub { font-size: .6rem; color: var(--paper-dim); margin-bottom: 7px; }
+.yaku-tip .yt-cards { display: flex; gap: 3px; flex-wrap: wrap; }
+.cp-li.yk { cursor: help; }
+.cp-li.yk:hover { color: var(--gold); }
+
+/* 코치마크 화면 중앙 (손패 가림 방지) */
+.coach-mark.centered { top: 50%; transform: translate(-50%, -50%); }

@@ -210,16 +210,13 @@ function showCoach(c) {
   const anchor = document.querySelector(c.anchor);
   refs.root.dataset.mode = 'coach';
   refs.root.classList.remove('hidden');
-  const rect = anchor ? anchor.getBoundingClientRect() : null;
-  const pos = rect
-    ? 'style="top:' + Math.min(rect.bottom + 8, window.innerHeight - 120) + 'px;"'
-    : 'style="top:40%;"';
+  // 코치마크는 화면 중앙에 띄운다 (손패가 하단에 붙어 가려지지 않게). 대상은 하이라이트만.
   refs.root.innerHTML =
-    '<div class="coach-mark" ' + pos + '>' +
+    '<div class="coach-mark centered">' +
     '<p>' + c.text + '</p>' +
     '<button type="button" id="coach-got" class="btn declare">알겠어요</button>' +
     '</div>';
-  if (rect) highlightAnchor(anchor);
+  if (anchor) highlightAnchor(anchor);
 }
 
 let highlighted = null;

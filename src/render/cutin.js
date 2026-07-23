@@ -5,6 +5,7 @@ import { cardEl, genreName } from './table.js';
 
 let refs = null;
 let data = null;
+let cutinTimer = null;
 
 export function initCutin(dataBundle) {
   data = dataBundle;
@@ -12,6 +13,8 @@ export function initCutin(dataBundle) {
 }
 
 export function hideOverlay() {
+  clearTimeout(cutinTimer);
+  refs.overlay.onclick = null;
   refs.overlay.classList.add('hidden');
   refs.overlay.innerHTML = '';
 }
@@ -32,10 +35,11 @@ export function showStealPrompt(s, stealInfo) {
     '</div></div>';
 }
 
-// 국 종료 컷인 — 승자·역·점수. 탭하면 닫힘(스킵 규칙 D5).
+// 국 종료 — 승리는 완성 컷인 연출 후 결과 모달, 유국은 바로 결과. 탭 스킵(D5).
 export function showRoundEnd(s) {
   const r = s.round.result;
   refs.overlay.classList.remove('hidden');
+  refs.overlay.onclick = null;
 
   if (r.type === 'exhaust') {
     const line = (who, label) =>
@@ -47,11 +51,48 @@ export function showRoundEnd(s) {
     return;
   }
 
+  // 완성 순간 컷인(모든 완성) → 역만·고득점이면 더 화려하게 → 탭/시간 후 결과 모달.
+  playWinCutin(r, () => renderRoundResult(r));
+}
+
+// 완성 등급: 역만(불후의 명작·13점↑) / 대작(6점↑) / 일반
+function winTier(r) {
+  if ((r.yaku && r.yaku.some((y) => y.yakuman)) || r.score >= 13) return 'yakuman';
+  if (r.score >= 6) return 'big';
+  return 'normal';
+}
+function topYakuName(r) {
+  if (!r.yaku || !r.yaku.length) return '';
+  return r.yaku.slice().sort((a, b) => b.score - a.score)[0].name;
+}
+
+// 완성 컷인. "내 의지로 맞춘" 순간을 잡아주는 연출. 탭하면 즉시 결과로(스킵).
+function playWinCutin(r, onDone) {
+  const tier = winTier(r);
+  const typeLabel = r.type === 'steal' ? '운명 뺏기' : '완성 선언';
+  const headline = tier === 'normal'
+    ? '이야기 완성'
+    : (topYakuName(r) || (tier === 'yakuman' ? '불후의 명작' : '이야기 완성'));
+  refs.overlay.innerHTML =
+    '<div class="cutin tier-' + tier + '">' +
+    (tier !== 'normal' ? '<div class="cutin-rays"></div>' : '') +
+    '<div class="cutin-sub">' + typeLabel + '</div>' +
+    '<div class="cutin-main">' + headline + '</div>' +
+    '<div class="cutin-score">' + r.score + '점</div>' +
+    '</div>';
+  let done = false;
+  const go = () => { if (done) return; done = true; clearTimeout(cutinTimer); onDone(); };
+  refs.overlay.onclick = go; // 탭 스킵
+  cutinTimer = setTimeout(go, tier === 'normal' ? 1100 : 1900);
+}
+
+// 결과 모달 — 완성 손패(세트·세트·짝) + 역 + 점수
+function renderRoundResult(r) {
+  refs.overlay.onclick = null;
   const winnerMe = r.winner === 'player';
   const typeLabel = r.type === 'steal' ? '운명 뺏기!' : '완성 선언!';
   const handHtml = document.createElement('div');
   handHtml.className = 're-hand';
-  // 완성 손패를 분해 순서(세트·세트·짝)로 보여준다 — 완성의 "형태"가 읽히도록
   const d = r.decomp;
   const groups = [d.sets[0].ids, d.sets[1].ids, d.pair.ids];
   for (const g of groups) {
@@ -65,11 +106,9 @@ export function showRoundEnd(s) {
     }
     handHtml.appendChild(wrap);
   }
-
   const yakuLines = r.yaku
     .map((y) => '<p class="re-yaku"><span>' + y.name + '</span><small>' + y.sub + '</small><b>+' + y.score + '</b></p>')
     .join('');
-
   refs.overlay.innerHTML =
     '<div class="modal roundend ' + (winnerMe ? 'win' : 'lose') + '">' +
     '<p class="re-type">' + typeLabel + '</p>' +

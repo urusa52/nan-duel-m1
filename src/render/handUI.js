@@ -29,7 +29,36 @@ export function initHandUI(dataBundle, logicDeps) {
     assist: document.getElementById('assist'),
     actions: document.getElementById('actions'),
     cardInfo: document.getElementById('card-info'),
+    yakuTip: document.getElementById('yaku-tip'),
   };
+  // '노려볼 역' 항목 hover(데스크톱)·탭(모바일)로 예시 패 툴팁. #assist는 매번 갱신되지만
+  // 요소 자체는 유지되므로 위임으로 붙인다.
+  refs.assist.addEventListener('mouseover', (e) => { const el = e.target.closest('.yk'); if (el) showYakuTip(el); });
+  refs.assist.addEventListener('mouseout', (e) => { const el = e.target.closest('.yk'); if (el) hideYakuTip(); });
+  refs.assist.addEventListener('click', (e) => { const el = e.target.closest('.yk'); if (el) toggleYakuTip(el); });
+}
+
+let tipFor = null;
+function showYakuTip(el) {
+  const y = (data.yakuData.yaku || []).find((x) => x.id === el.dataset.yaku);
+  if (!y) return;
+  const tip = refs.yakuTip;
+  tip.innerHTML = '<div class="yt-title">' + y.name + ' <span class="cp-pt">' + y.score + '점</span></div>' +
+    '<div class="yt-sub">' + y.sub + '</div>';
+  const row = document.createElement('div');
+  row.className = 'yt-cards';
+  for (const cid of (y.example || [])) { const c = cardEl(cid, { small: true }); c.disabled = true; row.appendChild(c); }
+  tip.appendChild(row);
+  tip.classList.remove('hidden');
+  const rect = el.getBoundingClientRect();
+  tip.style.left = (rect.right + 10) + 'px';
+  tip.style.top = Math.max(8, rect.top - 6) + 'px';
+  tipFor = el;
+}
+function hideYakuTip() { refs.yakuTip.classList.add('hidden'); refs.yakuTip.innerHTML = ''; tipFor = null; }
+function toggleYakuTip(el) {
+  if (tipFor === el && !refs.yakuTip.classList.contains('hidden')) hideYakuTip();
+  else showYakuTip(el);
 }
 
 // 손패 표시 정렬 우선순위: 장르(cards.json 정의 순서: 무협·SF·판타지·로맨스·호러) → 단계(기·승·전·결).
@@ -101,10 +130,12 @@ function renderAssist(s) {
   const yk = reachableYaku(hand, ctx);
   html += '<div class="cp-k">노려볼 역</div>';
   html += yk.length
-    ? yk.map((y) => '<div class="cp-li">' + y.name + ' <span class="cp-pt">' + y.score + '점</span></div>').join('')
+    ? yk.map((y) => '<div class="cp-li yk" data-yaku="' + y.id + '">' + y.name +
+        ' <span class="cp-pt">' + y.score + '점</span></div>').join('')
     : '<div class="cp-li dim">—</div>';
 
   box.innerHTML = html;
+  hideYakuTip(); // 재렌더 시 stale 툴팁 제거
 }
 
 // 상황 힌트 — 튜토리얼 코치가 .assist-declare / .assist-tenpai 를 참조하므로 클래스 유지.

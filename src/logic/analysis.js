@@ -65,5 +65,5 @@ export function reachableYaku(hand, ctx) {
   };
   return ctx.yakuData.yaku
     .filter((y) => ok[y.id])
-    .map((y) => ({ name: y.name, score: y.score }));
+    .map((y) => ({ id: y.id, name: y.name, score: y.score }));
 }

@@ -1,41 +1,43 @@
-// yakuEval.js — 가산역 판정·합산 (D30·D35). 순수함수만.
-// 원칙: 조건 로직은 코드, 이름·점수는 yaku.json (수치는 데이터로 — 프로젝트 규칙 5).
-// 가산역은 중복 합산. 역만(불후의 명작)은 단독 점수로 대체.
+// yakuEval.js — 런 기반 완성 채점 (설계_런기반_완성구조_가산역). 순수함수만.
+// 세트는 handEval에서 '같은 장르 연속(기승전/승전결)'만 인정된다(런). 여기선 두 런의
+// 아크 조합·장르·짝으로 '축 + 등급'을 매긴다. 점수는 yaku.json, 조건 로직은 여기(규칙 5).
+//
+// 축:
+//  · 서사 완성도(택1): 미완×2=선언불가 / 양대완결(승전결×2) / 대서사시(기→결, 다른 장르) /
+//                      일대기(기→결, 같은 장르=같은 작품)
+//  · 장르 순도(가산): 전집(8장 한 장르)
+//  · 짝의 격(가산): 인연
+//  · 역만(단독 대체): 불후의 명작 = 일대기 + 전집
+// 선언 게이트: 두 세트 중 최소 하나가 '승전결'(결말). = hasFinale.
 
 import { decompose, DEFAULT_RULES } from './handEval.js';
 
-// 분해 하나에 대해 성립 역 id 목록을 계산
-function yakuForDecomp(decomp, hand, cardMap) {
+const isFinale = (s) => !!s.runStages && s.runStages[2] === 4; // 2-3-4
+const isOpening = (s) => !!s.runStages && s.runStages[0] === 1; // 1-2-3
+
+// 분해 하나 → { ids:[역 id...], hasFinale }
+function yakuForDecomp(decomp, cardMap) {
   const [s1, s2] = decomp.sets;
   const ids = [];
-  const cards = hand.map((id) => cardMap[id]);
-  const genreSetAll = new Set(cards.map((c) => c.genre));
+  const finaleCount = (isFinale(s1) ? 1 : 0) + (isFinale(s2) ? 1 : 0);
+  const chain = (isOpening(s1) && isFinale(s2)) || (isFinale(s1) && isOpening(s2)); // 기→결 완주
+  const sameGenre2 = s1.genre === s2.genre;
+  const pairGenre = cardMap[decomp.pair.ids[0]].genre;
+  const flush = sameGenre2 && pairGenre === s1.genre; // 8장 전부 같은 장르
 
-  // 크로스오버: 장르 무관(혼합 장르) 서사 세트 포함
-  if ((s1.isRun && !s1.sameGenre) || (s2.isRun && !s2.sameGenre)) ids.push('crossover');
-  // 정통 연재: 같은 장르 연속 서사 세트 포함 (D29 고점)
-  if (s1.pureRun || s2.pureRun) ids.push('pureSerial');
-  // 단편집: 두 세트 모두 같은-장르 세트이고 장르가 서로 다름
-  if (s1.sameGenre && s2.sameGenre && s1.genre !== s2.genre) ids.push('anthology2');
-  // 전속 작가: 두 세트가 같은 장르로 통일
-  if (s1.sameGenre && s2.sameGenre && s1.genre === s2.genre) ids.push('exclusive');
-  // 완결: 결(4단계)로 끝나는 서사 세트 포함 (2-3-4)
-  const endsAtVictory = (s) => s.isRun && s.runStages[2] === 4;
-  if (endsAtVictory(s1) || endsAtVictory(s2)) ids.push('finale');
-  // 인연: 짝이 인연 짝
+  // 서사 완성도 (택1)
+  if (chain) ids.push(sameGenre2 ? 'sagaSame' : 'sagaMix'); // 일대기 / 대서사시
+  else if (finaleCount === 2) ids.push('doubleFinale');     // 양대 완결
+  // finaleCount===0 (기승전×2): 아무것도 없음 → 선언 불가
+
+  // 장르 순도
+  if (flush) ids.push('complete');
+  // 짝의 격
   if (decomp.pair.bond) ids.push('bond');
-  // 전집: 8장 전부 같은 장르
-  if (genreSetAll.size === 1) ids.push('complete');
-  // 오대 장르: 5개 장르 전부 등장
-  if (genreSetAll.size === 5) ids.push('fiveGenre');
-  // 대서사시: 서사 세트 둘이 1-2-3과 2-3-4로 기→결 완주
-  const runKey = (s) => (s.isRun ? s.runStages.join('') : '');
-  const keys = [runKey(s1), runKey(s2)];
-  if (keys.includes('123') && keys.includes('234')) ids.push('fourAct');
-  // 불후의 명작: 전집 + 대서사시 동시
-  if (ids.includes('complete') && ids.includes('fourAct')) ids.push('masterpiece');
+  // 역만: 전집 + 기→결 완주
+  if (flush && chain) ids.push('masterpiece');
 
-  return ids;
+  return { ids, hasFinale: finaleCount >= 1 };
 }
 
 // 팩토리: yaku.json을 받아 평가 함수를 만든다
@@ -43,33 +45,32 @@ export function makeYakuEvaluator(yakuData, cardMap, bondSet, rules = DEFAULT_RU
   const table = {};
   for (const y of yakuData.yaku) table[y.id] = y;
 
-  // hand(8장) → 최고 점수 해석 { score, yaku:[{id,name,score}], decomp } | null(미완성)
+  // hand(8장) → 최고 해석 { score, yaku:[{id,name,score}], decomp, declarable } | null(미완성)
   return function evalHand(hand) {
     const decomps = decompose(hand, cardMap, bondSet, rules);
     if (decomps.length === 0) return null;
+
     let best = null;
     for (const d of decomps) {
-      const ids = yakuForDecomp(d, hand, cardMap);
-      let score;
+      const { ids, hasFinale } = yakuForDecomp(d, cardMap);
       let list;
+      let score;
       if (ids.includes('masterpiece')) {
         // 역만은 단독 점수 (합산하지 않음)
-        score = table.masterpiece.score;
         list = [table.masterpiece];
+        score = table.masterpiece.score;
       } else {
-        list = ids.map((id) => table[id]);
+        list = ids.map((id) => table[id]).filter(Boolean);
         score = list.reduce((s, y) => s + y.score, 0);
       }
-      if (!best || score > best.score) {
-        best = { score, yaku: list, decomp: d };
-      }
+      const cand = { score, yaku: list, decomp: d, hasFinale };
+      // 선언 가능한(결말 있는) 분해를 우선, 그다음 높은 점수.
+      if (!best) best = cand;
+      else if (cand.hasFinale !== best.hasFinale ? cand.hasFinale : cand.score > best.score) best = cand;
     }
-    // 선언 자격 (D35 + 난이도 레버): 역 개수가 minYakuToDeclare 이상.
-    // 단, 역만(불후의 명작)은 단독 역이라도 선언 가능 (역만은 최소역 조건 예외).
-    if (best) {
-      const isYakuman = best.yaku.some((y) => y.yakuman);
-      best.declarable = (isYakuman || best.yaku.length >= rules.minYakuToDeclare) && best.score > 0;
-    }
+
+    // 선언 게이트: 결말(승전결) 세트가 있고 득점이 있어야 선언 가능.
+    best.declarable = best.hasFinale && best.score > 0;
     return best;
   };
 }

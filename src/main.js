@@ -116,9 +116,11 @@ async function boot() {
           const cur0 = getState().round;
           if (!cur0 || cur0.phase !== 'decide' || cur0.turn !== A) return;
           // 능력 사용 시도 (v1: 즉시 완성되면 각색/복선). 잠깐 표시 후 선언.
-          // config.abilities.aiUse=false면 AI는 능력을 안 쓴다(밸런스 레버).
-          const aiUse = !cfg.abilities || cfg.abilities.aiUse !== false;
-          const choice = aiUse ? aiChooseAbility(cur0, deps) : null;
+          // config.abilities.aiUse: true=전부 / false=없음 / 배열=허용 능력 목록 (밸런스 레버).
+          //   각색(adapt)은 즉시 완성 버튼이라 국을 너무 빨리 끝낸다 → 기본값에서 목록으로 제외.
+          const aiUse = cfg.abilities ? cfg.abilities.aiUse : true;
+          const aiAllow = Array.isArray(aiUse) ? new Set(aiUse) : null; // 배열이면 그 집합, 아니면 전부
+          const choice = (aiUse === false) ? null : aiChooseAbility(cur0, deps, aiAllow);
           if (choice) {
             let cur = cur0;
             let label = '';

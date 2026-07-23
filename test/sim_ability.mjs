@@ -29,6 +29,11 @@ const evalHand = makeYakuEvaluator(yakuData, cardMap, bondSet, rules);
 const deps = { cardMap, bondSet, allCardIds, evalHand, rules };
 const abilityInit = { [P]: initAbilityState(cfg), [A]: initAbilityState(cfg) };
 
+// AI 능력 허용 목록: config.abilities.aiUse (true=전부 / false=없음 / 배열=허용목록)
+const aiUseCfg = cfg.abilities ? cfg.abilities.aiUse : true;
+const aiAllow = Array.isArray(aiUseCfg) ? new Set(aiUseCfg) : null;
+const aiCanUse = aiUseCfg !== false;
+
 const N = 500;
 const stat = { tsumo: 0, steal: 0, exhaust: 0, adapt: 0, foreshadow: 0, draws: [] };
 
@@ -43,7 +48,7 @@ for (let seed = 1; seed <= N; seed++) {
       s = drawStep(s, deps);
       if (s.wall.length < before) draws++;
     } else if (s.phase === 'decide') {
-      const ch = aiChooseAbility(s, deps);
+      const ch = aiCanUse ? aiChooseAbility(s, deps, aiAllow) : null;
       if (ch) {
         if (ch.id === 'adapt') { s = useAdapt(s, deps, ch.index, ch.genre); stat.adapt++; }
         else if (ch.id === 'foreshadow') { s = useForeshadow(s, deps, ch.discardIndex); stat.foreshadow++; }

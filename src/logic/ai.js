@@ -100,8 +100,10 @@ export function aiWantsSteal() {
 //   · 각색: 손패 한 장의 장르를 바꿔 선언 가능해지면
 //   · 복선: 뽑은 카드를 무르고 버림패를 회수해 선언 가능해지면
 // 예언서(정보형)는 결정적 AI엔 이득이 작아 v1에서는 쓰지 않는다.
+// allow: AI가 쓸 수 있는 능력 id 집합(Set). 넘기지 않으면 전부 허용(하위호환).
+//   · 각색(adapt)은 사실상 "즉시 완성 버튼"이라 국을 너무 빨리 끝낸다 → 밸런스 레버로 여기서 뺄 수 있다.
 // 반환: { id:'adapt', index, genre } | { id:'foreshadow', discardIndex } | null
-export function aiChooseAbility(round, deps) {
+export function aiChooseAbility(round, deps, allow) {
   const who = round.turn;
   const ab = (round.abilities && round.abilities[who]) || {};
   const hand = round.hands[who];
@@ -110,7 +112,7 @@ export function aiChooseAbility(round, deps) {
   const already = deps.evalHand(hand);
   if (already && already.declarable) return null;
 
-  if ((ab.adapt || 0) > 0) {
+  if ((ab.adapt || 0) > 0 && (!allow || allow.has('adapt'))) {
     const genres = [...new Set(deps.allCardIds.map((id) => id.split('-')[0]))];
     for (let i = 0; i < hand.length; i++) {
       const cur = deps.cardMap[hand[i]];
@@ -126,7 +128,8 @@ export function aiChooseAbility(round, deps) {
     }
   }
 
-  if ((ab.foreshadow || 0) > 0 && round.discards[who].length > 0 && round.lastDrawn != null) {
+  if ((ab.foreshadow || 0) > 0 && (!allow || allow.has('foreshadow')) &&
+      round.discards[who].length > 0 && round.lastDrawn != null) {
     const base = hand.slice();
     base.pop(); // 방금 뽑은 카드(끝) 무름
     for (let d = 0; d < round.discards[who].length; d++) {

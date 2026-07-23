@@ -15,17 +15,34 @@
   },
   "rules": {
     "allowCrossGenreRun": false,
-    "minYakuToDeclare": 2
+    "allowGenreTriplet": false,
+    "minYakuToDeclare": 1,
+    "_note": "런 기반 완성: 세트=같은 장르 연속(기승전/승전결)만. 선언 게이트는 '승전결 세트 최소 1개'(yakuEval). minYaku는 미사용 · allowGenreTriplet=true로 앤솔로지 안전판"
   },
   "showOpponentTenpai": true,
   "abilities": {
-    "enabled": ["foresight", "adapt", "foreshadow"],
+    "enabled": [
+      "foresight",
+      "adapt",
+      "foreshadow"
+    ],
     "shared": true,
-    "aiUse": true,
-    "uses": { "foresight": 1, "adapt": 1, "foreshadow": 1 },
-    "foresight": { "peek": 3 },
-    "adapt": { "keepStage": true },
-    "foreshadow": { "source": "self" }
+    "aiUse": ["foresight", "foreshadow"],
+    "aiUseNote": "AI가 쓸 능력. true=전부/false=없음/배열=허용목록. 각색(adapt)은 즉시완성이라 제외 — 국이 너무 빨리 끝남",
+    "uses": {
+      "foresight": 1,
+      "adapt": 1,
+      "foreshadow": 1
+    },
+    "foresight": {
+      "peek": 3
+    },
+    "adapt": {
+      "keepStage": true
+    },
+    "foreshadow": {
+      "source": "self"
+    }
   },
   "difficulty": "normal",
   "difficultyPresets": {

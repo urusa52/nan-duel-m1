@@ -33,35 +33,32 @@ export function formedSets(hand, ctx) {
   return out;
 }
 
-// 노려볼 역 — 손패 구성 기반의 가벼운 가능성 판정(정확한 완성 판정 아님).
-// yaku.json에서 이름·점수를 가져오고, id별 "아직 가능성이 남았나"만 싸게 본다.
+// 노려볼 역 — 런 기반 손패 구성의 가벼운 가능성 판정(정확한 완성 판정 아님, 방향 안내용).
+// 아크 진척도(기승전 쪽 / 승전결 쪽)를 장르별로 보고 어떤 역을 노릴 만한지 싸게 추정한다.
 export function reachableYaku(hand, ctx) {
   const cs = hand.map((id) => ctx.cardMap[id]);
-  const byGenre = {}; const gc = {}; const stages = new Set();
+  const byGenre = {}; const gc = {};
   for (const c of cs) {
     (byGenre[c.genre] = byGenre[c.genre] || new Set()).add(c.stage);
     gc[c.genre] = (gc[c.genre] || 0) + 1;
-    stages.add(c.stage);
   }
   const genres = Object.keys(byGenre);
   const maxG = genres.length ? Math.max(...genres.map((g) => gc[g])) : 0;
-  const consecSame = genres.some((g) => [1, 2, 3].some((n) => byGenre[g].has(n) && byGenre[g].has(n + 1)));
-  const consecAny = [1, 2, 3].some((n) => stages.has(n) && stages.has(n + 1));
-  const twoGenres = genres.filter((g) => gc[g] >= 2).length >= 2;
+  // 기승전(1-2-3) 쪽 진척 / 승전결(2-3-4) 쪽 진척: 해당 단계가 몇 개나 모였나
+  const openProg = (g) => [1, 2, 3].filter((n) => byGenre[g].has(n)).length;
+  const finProg = (g) => [2, 3, 4].filter((n) => byGenre[g].has(n)).length;
+  const openGenres = genres.filter((g) => openProg(g) >= 2);
+  const finGenres = genres.filter((g) => finProg(g) >= 2);
+  const sameGenreSaga = genres.some((g) => openProg(g) >= 2 && finProg(g) >= 2); // 한 장르로 기→결
   const hasBond = hand.some((id, i) => hand.some((jd, j) => i !== j && isPair(id, jd, ctx.bondSet).bond));
-  const all4 = [1, 2, 3, 4].every((n) => stages.has(n));
 
   const ok = {
-    crossover: consecAny,
-    anthology2: twoGenres,
+    doubleFinale: finGenres.length >= 2,                    // 승전결 두 편
+    sagaMix: openGenres.length >= 1 && finGenres.length >= 1, // 기→결 완주(합작)
+    sagaSame: sameGenreSaga,                                 // 일대기(같은 장르 완주)
     bond: hasBond,
-    pureSerial: consecSame,
-    finale: stages.has(4) && consecAny,
-    exclusive: maxG >= 4,
-    complete: maxG >= 6,
-    fourAct: all4,
-    fiveGenre: genres.length >= 4,
-    masterpiece: maxG >= 6 && all4,
+    complete: maxG >= 6,                                     // 전집(한 장르 몰기)
+    masterpiece: maxG >= 6 && sameGenreSaga,                 // 역만
   };
   return ctx.yakuData.yaku
     .filter((y) => ok[y.id])

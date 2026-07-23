@@ -26,8 +26,9 @@ const cfg = loadJson('config.json');
 const cardMap = makeCardMap(cardsData);
 const bondSet = makeBondSet(bondsData);
 const allCardIds = cardsData.cards.map((c) => c.id);
-const evalHand = makeYakuEvaluator(yakuData, cardMap, bondSet);
-const deps = { cardMap, bondSet, allCardIds, evalHand };
+const rules = cfg.rules; // 런 기반 실규칙으로 테스트
+const evalHand = makeYakuEvaluator(yakuData, cardMap, bondSet, rules);
+const deps = { cardMap, bondSet, allCardIds, evalHand, rules };
 
 let pass = 0, fail = 0;
 function t(name, cond, extra = '') {
@@ -64,88 +65,76 @@ t('짝: 같은 카드', isPair('mu-1', 'mu-1', bondSet).ok === true);
 t('짝: 인연 (검과 붓)', isPair('mu-3', 'ro-3', bondSet).ok && isPair('mu-3', 'ro-3', bondSet).bond);
 t('짝 불인정: 무관한 두 장', isPair('mu-1', 'sf-4', bondSet).ok === false);
 
-// 완성형: [무협123 정통] + [SF장르셋] + [호러짝]
-const handComplete = ['mu-1', 'mu-2', 'mu-3', 'sf-1', 'sf-2', 'sf-4', 'ho-1', 'ho-1'];
-t('8장 완성형 분해 성공', isCompleteForm(handComplete, cardMap, bondSet));
-t('7장은 완성 불가', decompose(handComplete.slice(0, 7), cardMap, bondSet).length === 0);
+// 완성형(런 기반): [무협 기승전] + [SF 승전결] + [호러 짝]
+const handComplete = ['mu-1', 'mu-2', 'mu-3', 'sf-2', 'sf-3', 'sf-4', 'ho-1', 'ho-1'];
+t('8장 완성형 분해 성공', isCompleteForm(handComplete, cardMap, bondSet, rules));
+t('7장은 완성 불가', decompose(handComplete.slice(0, 7), cardMap, bondSet, rules).length === 0);
 const handNo = ['mu-1', 'sf-1', 'fa-1', 'ro-1', 'ho-1', 'mu-4', 'sf-4', 'fa-4'];
-t('무연결 8장은 미완성', !isCompleteForm(handNo, cardMap, bondSet));
+t('무연결 8장은 미완성', !isCompleteForm(handNo, cardMap, bondSet, rules));
+// 같은 장르 삼중첩은 세트 아님 (런만 인정)
+t('삼중첩은 완성 아님', !isCompleteForm(['mu-1', 'mu-1', 'mu-4', 'sf-2', 'sf-3', 'sf-4', 'ho-1', 'ho-1'], cardMap, bondSet, rules));
 
-// 텐파이/대기: 위 완성형에서 mu-3 제거 → mu-3 대기 (or 다른 완성 카드)
-const hand7 = ['mu-1', 'mu-2', 'sf-1', 'sf-2', 'sf-4', 'ho-1', 'ho-1'];
-const waits = waitsFor(hand7, cardMap, bondSet, allCardIds, evalHand);
-t('텐파이 판정 + 대기 목록에 mu-3', waits.includes('mu-3'), 'waits=' + waits.join(','));
-t('형식 텐파이 true', isFormalTenpai(hand7, cardMap, bondSet, allCardIds));
-t('무연결 7장은 노텐', !isFormalTenpai(handNo.slice(0, 7), cardMap, bondSet, allCardIds));
+// 텐파이/대기: 완성형에서 sf-4(결말) 제거 → sf-4 대기
+const hand7 = ['mu-1', 'mu-2', 'mu-3', 'sf-2', 'sf-3', 'ho-1', 'ho-1'];
+const waits = waitsFor(hand7, cardMap, bondSet, allCardIds, evalHand, rules);
+t('텐파이 판정 + 대기 목록에 sf-4', waits.includes('sf-4'), 'waits=' + waits.join(','));
+t('형식 텐파이 true', isFormalTenpai(hand7, cardMap, bondSet, allCardIds, rules));
+t('무연결 7장은 노텐', !isFormalTenpai(handNo.slice(0, 7), cardMap, bondSet, allCardIds, rules));
 
-// ---------- yakuEval ----------
+// ---------- yakuEval (런 기반) ----------
 console.log('[yakuEval]');
 function yakuIds(hand) {
   const b = evalHand(hand);
   return b ? b.yaku.map((y) => y.id).sort() : null;
 }
-// 크로스오버: 혼합 서사 세트 포함
+// 양대 완결: 승전결 두 개 (다른 장르)
 {
-  const h = ['mu-1', 'sf-2', 'fa-3', 'ro-1', 'ro-2', 'ro-3', 'ho-1', 'ho-1'];
+  const h = ['mu-2', 'mu-3', 'mu-4', 'ho-2', 'ho-3', 'ho-4', 'fa-1', 'fa-1'];
   const ids = yakuIds(h);
-  t('크로스오버 성립', ids && ids.includes('crossover'), JSON.stringify(ids));
+  t('양대 완결 성립', ids && ids.includes('doubleFinale'), JSON.stringify(ids));
 }
-// 단편집: 서로 다른 장르 세트 2 (순서 없는 조합으로)
+// 대서사시: 기승전 + 승전결로 기→결 완주 (다른 장르 합작)
 {
-  const h = ['mu-1', 'mu-2', 'mu-4', 'sf-1', 'sf-2', 'sf-4', 'ho-1', 'ho-1'];
+  const h = ['mu-1', 'mu-2', 'mu-3', 'sf-2', 'sf-3', 'sf-4', 'fa-1', 'fa-1'];
   const ids = yakuIds(h);
-  t('단편집 성립', ids && ids.includes('anthology2'), JSON.stringify(ids));
+  t('대서사시 성립', ids && ids.includes('sagaMix'), JSON.stringify(ids));
 }
-// 인연 짝
+// 인연 짝 (+대서사시)
 {
-  const h = ['mu-1', 'mu-2', 'mu-4', 'sf-1', 'sf-2', 'sf-4', 'mu-3', 'ro-3'];
+  const h = ['mu-1', 'mu-2', 'mu-3', 'sf-2', 'sf-3', 'sf-4', 'mu-3', 'ro-3'];
   const ids = yakuIds(h);
   t('인연 성립', ids && ids.includes('bond'), JSON.stringify(ids));
 }
-// 정통 연재 + 완결 (mu 2-3-4)
+// 일대기: 같은 장르로 기→결 완주 (한 작가의 연작)
 {
-  const h = ['mu-2', 'mu-3', 'mu-4', 'sf-1', 'sf-2', 'sf-4', 'ho-1', 'ho-1'];
+  const h = ['fa-1', 'fa-2', 'fa-3', 'fa-2', 'fa-3', 'fa-4', 'mu-1', 'mu-1'];
   const ids = yakuIds(h);
-  t('정통 연재 성립', ids && ids.includes('pureSerial'), JSON.stringify(ids));
-  t('완결 성립 (2-3-4)', ids && ids.includes('finale'));
+  t('일대기 성립', ids && ids.includes('sagaSame'), JSON.stringify(ids));
 }
-// 전속 작가: 두 세트 같은 장르 (mu123 + mu 1,2,4 아님… mu 장르셋 두 개 필요 → mu 6장)
+// 전집: 8장 전부 같은 장르 (승전결 두 편 + 짝)
 {
-  const h = ['mu-1', 'mu-1', 'mu-2', 'mu-3', 'mu-4', 'mu-4', 'ho-1', 'ho-1'];
-  const ids = yakuIds(h);
-  t('전속 작가 성립', ids && ids.includes('exclusive'), JSON.stringify(ids));
-}
-// 전집: 8장 전부 같은 장르
-{
-  const h = ['mu-1', 'mu-1', 'mu-2', 'mu-3', 'mu-4', 'mu-4', 'mu-2', 'mu-2'];
+  const h = ['ho-2', 'ho-3', 'ho-4', 'ho-2', 'ho-3', 'ho-4', 'ho-1', 'ho-1'];
   const ids = yakuIds(h);
   t('전집 성립', ids && ids.includes('complete'), JSON.stringify(ids));
 }
-// 오대 장르
+// 불후의 명작: 한 장르로 기→결 완주 → 단독 13점
 {
-  const h = ['mu-1', 'sf-2', 'fa-3', 'ro-2', 'ro-3', 'ro-4', 'ho-1', 'ho-1'];
-  const ids = yakuIds(h);
-  t('오대 장르 성립', ids && ids.includes('fiveGenre'), JSON.stringify(ids));
-}
-// 기승전결: 123 + 234
-{
-  const h = ['mu-1', 'sf-2', 'fa-3', 'ro-2', 'fa-3', 'ho-4', 'ho-1', 'ho-1'];
-  const ids = yakuIds(h);
-  t('기승전결 성립', ids && ids.includes('fourAct'), JSON.stringify(ids));
-}
-// 불후의 명작: 한 장르로 123+234+짝 → 단독 13점
-{
-  const h = ['mu-1', 'mu-2', 'mu-3', 'mu-2', 'mu-3', 'mu-4', 'mu-1', 'mu-1'];
+  const h = ['ho-1', 'ho-2', 'ho-3', 'ho-2', 'ho-3', 'ho-4', 'ho-1', 'ho-1'];
   const b = evalHand(h);
   t('불후의 명작 성립', b && b.yaku.some((y) => y.id === 'masterpiece'), JSON.stringify(yakuIds(h)));
   t('역만은 단독 13점 (합산 아님)', b && b.score === 13, 'score=' + (b && b.score));
 }
-// 최고 해석 선택: 같은 손을 더 높은 점수로 읽는가
+// 선언 게이트: 기승전 + 기승전(결말 없음) → 선언 불가
 {
-  // mu 2-3-4 정통(2)+완결(2) vs mu 장르셋 해석 — 최고점을 골라야 함
-  const h = ['mu-2', 'mu-3', 'mu-4', 'sf-1', 'sf-2', 'sf-4', 'ho-1', 'ho-1'];
+  const h = ['mu-1', 'mu-2', 'mu-3', 'sf-1', 'sf-2', 'sf-3', 'fa-1', 'fa-1'];
   const b = evalHand(h);
-  t('최고 점수 해석 선택 (≥4점)', b.score >= 4, 'score=' + b.score);
+  t('결말 없으면 선언 불가', b && b.declarable === false, 'score=' + (b && b.score));
+}
+// 일대기는 6점 이상 (격 차등: 합작 3 → 같은 작품 6)
+{
+  const h = ['fa-1', 'fa-2', 'fa-3', 'fa-2', 'fa-3', 'fa-4', 'ho-1', 'ho-1'];
+  const b = evalHand(h);
+  t('일대기 ≥6점', b.declarable && b.score >= 6, 'score=' + b.score);
 }
 
 // ---------- duel ----------
@@ -170,14 +159,14 @@ console.log('[duel]');
 {
   const wall = shuffle(buildWall(allCardIds, cfg.copiesPerCard), makeRng(11));
   let s = newRound(wall, A);
-  // AI가 mu-3을 버리면 P가 뺏어 완성하도록 손패 조작 (테스트 전용)
-  s = { ...s, hands: { [P]: ['mu-1', 'mu-2', 'sf-1', 'sf-2', 'sf-4', 'ho-1', 'ho-1'], [A]: s.hands[A] } };
+  // AI가 sf-4(결말)를 버리면 P가 뺏어 대서사시로 완성하도록 손패 조작 (테스트 전용)
+  s = { ...s, hands: { [P]: ['mu-1', 'mu-2', 'mu-3', 'sf-2', 'sf-3', 'ho-1', 'ho-1'], [A]: s.hands[A] } };
   s = drawStep(s, deps); // AI 뽑기
-  // AI 손패에 mu-3 주입 후 버리게 함
-  s = { ...s, hands: { ...s.hands, [A]: s.hands[A].slice(0, 7).concat(['mu-3']) } };
-  s = discardStep(s, 'mu-3');
+  // AI 손패에 sf-4 주입 후 버리게 함
+  s = { ...s, hands: { ...s.hands, [A]: s.hands[A].slice(0, 7).concat(['sf-4']) } };
+  s = discardStep(s, 'sf-4');
   const st = stealCheck(s, deps);
-  t('운명 뺏기 감지', !!st && st.taker === P, JSON.stringify(st && st.best.yaku));
+  t('운명 뺏기 감지', !!st && st.taker === P, JSON.stringify(st && st.best && st.best.yaku));
   const ended = declareSteal(s, deps);
   t('운명 뺏기 결과: P 승, 점수>0', ended.result.type === 'steal' && ended.result.winner === P && ended.result.score > 0);
 }

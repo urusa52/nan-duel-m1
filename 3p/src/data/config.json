@@ -1,0 +1,69 @@
+{
+  "handSize": 8,
+  "copiesPerCard": 4,
+  "copiesNote": "3인은 산 소진이 빨라 종당 4장(산 80)으로. 유국률 14%→4% (sim_3p).",
+  "seats": ["player", "rivalL", "rivalR"],
+  "seatNames": { "player": "나", "rivalL": "성급한 이야기꾼", "rivalR": "신중한 편집자" },
+  "matchMode": "race",
+  "targetScore": 10,
+  "fixedRounds": 4,
+  "tenpaiScore": 1,
+  "ai": {
+    "thinkMsMin": 350,
+    "thinkMsMax": 900
+  },
+  "tempo": {
+    "drawMs": 250,
+    "cutinMs": 1600,
+    "postDiscardMs": 700
+  },
+  "tempoNote": "postDiscardMs: 상대가 버린 뒤 다음 턴으로 넘어가기 전 머무는 시간(버림패가 눈에 들어오게). 유저 요청 0.5~1초.",
+  "rules": {
+    "allowCrossGenreRun": false,
+    "allowGenreTriplet": false,
+    "minYakuToDeclare": 1,
+    "_note": "런 기반 완성: 세트=같은 장르 연속(기승전/승전결)만. 선언 게이트는 '승전결 세트 최소 1개'(yakuEval). minYaku는 미사용 · allowGenreTriplet=true로 앤솔로지 안전판"
+  },
+  "showOpponentTenpai": true,
+  "abilities": {
+    "enabled": [
+      "foresight",
+      "adapt",
+      "foreshadow"
+    ],
+    "shared": true,
+    "aiUse": ["foresight", "foreshadow"],
+    "aiUseNote": "AI가 쓸 능력. true=전부/false=없음/배열=허용목록. 각색(adapt)은 즉시완성이라 제외 — 국이 너무 빨리 끝남",
+    "uses": {
+      "foresight": 1,
+      "adapt": 1,
+      "foreshadow": 1
+    },
+    "foresight": {
+      "peek": 3
+    },
+    "adapt": {
+      "keepStage": true
+    },
+    "foreshadow": {
+      "source": "self"
+    }
+  },
+  "difficulty": "normal",
+  "difficultyPresets": {
+    "easy": {
+      "patience": false,
+      "_note": "늘 즉시 선언 — 검증됨, 초보용"
+    },
+    "normal": {
+      "patienceGap": 3,
+      "bigEnough": 6,
+      "giveUpWall": 6,
+      "_note": "기본 균형"
+    },
+    "hard": {
+      "patience": false,
+      "_note": "미구현 스텁 — 현재 normal과 동급. 참기는 1:1에서 약화 확인(sim_strategy), 다른 방식으로 재설계 필요"
+    }
+  }
+}

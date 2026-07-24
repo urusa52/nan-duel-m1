@@ -1,0 +1,48 @@
+{
+  "note": "가산역 v2 (런 기반, 설계_런기반_완성구조_가산역). 세트=같은 장르 연속(기승전/승전결). 점수는 임시값 — 시뮬로 확정. 조건 로직은 yakuEval.js. example은 UI 툴팁용 예시 패.",
+  "yaku": [
+    {
+      "id": "doubleFinale",
+      "name": "양대 완결",
+      "sub": "승전결 아크 두 편 (두 결말)",
+      "score": 2,
+      "example": ["mu-2", "mu-3", "mu-4", "ho-2", "ho-3", "ho-4"]
+    },
+    {
+      "id": "sagaMix",
+      "name": "대서사시",
+      "sub": "기승전 + 승전결로 기→결 완주 (다른 장르 합작)",
+      "score": 3,
+      "example": ["mu-1", "mu-2", "mu-3", "sf-2", "sf-3", "sf-4"]
+    },
+    {
+      "id": "bond",
+      "name": "인연",
+      "sub": "짝이 인연 짝",
+      "score": 2,
+      "example": ["mu-3", "ro-3"]
+    },
+    {
+      "id": "sagaSame",
+      "name": "일대기",
+      "sub": "같은 장르로 기→결 완주 (한 작가의 연작)",
+      "score": 6,
+      "example": ["fa-1", "fa-2", "fa-3", "fa-2", "fa-3", "fa-4"]
+    },
+    {
+      "id": "complete",
+      "name": "전집",
+      "sub": "8장 전부 같은 장르",
+      "score": 5,
+      "example": ["ho-1", "ho-2", "ho-3", "ho-4"]
+    },
+    {
+      "id": "masterpiece",
+      "name": "불후의 명작",
+      "sub": "일대기 + 전집 (한 장르로 기→결 완주)",
+      "score": 13,
+      "yakuman": true,
+      "example": ["ho-1", "ho-2", "ho-3", "ho-2", "ho-3", "ho-4"]
+    }
+  ]
+}

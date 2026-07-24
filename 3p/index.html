@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>우리는 아직 『 』입니다 — 3인 대국</title>
+<link rel="stylesheet" href="./css/style-3p.css?v=1">
+<style>
+  #count-panel { position:absolute; top:64px; left:50%; transform:translateX(-50%);
+    background:rgba(0,0,0,.55); border:1px solid #3a5a4e; border-radius:8px; padding:8px 12px;
+    font-size:11px; color:#cfe0d8; max-width:520px; line-height:1.8; z-index:5; }
+  #count-panel.hidden { display:none; }
+  .subtitle { position:absolute; top:30px; left:18px; font-size:11px; color:#5f776d; z-index:6; }
+</style>
+</head>
+<body>
+<div class="table">
+  <div class="title">우리는 아직 『 』입니다 — 3인 대국</div>
+  <div class="subtitle"><span id="target-label"></span></div>
+
+  <div id="scores" class="scores"></div>
+
+  <section id="seat-rivalL" class="rival tl"></section>
+  <section id="seat-rivalR" class="rival tr"></section>
+
+  <div class="center">
+    <div class="wall-pill">산 <b id="wall-count">0</b>장</div>
+    <div class="tools">
+      <button type="button" id="btn-counts">수읽기</button>
+      <button type="button" id="btn-help">도움말</button>
+    </div>
+  </div>
+  <div id="count-panel" class="hidden"></div>
+
+  <aside class="cond">
+    <h4>맞출 수 있는 패</h4>
+    <div id="assist"></div>
+  </aside>
+
+  <section class="me-zone">
+    <div class="me-disc-cap">내 버림패</div>
+    <div id="my-disc" class="disc mine"></div>
+    <div class="actbar">
+      <p id="card-info"></p>
+      <div id="actions"></div>
+    </div>
+    <div id="my-hand" class="hand mine"></div>
+    <div id="ability-bar" class="abil"></div>
+  </section>
+
+  <div id="overlay" class="overlay hidden"></div>
+</div>
+
+<script type="module" src="./src/main3p.js?v=1"></script>
+</body>
+</html>

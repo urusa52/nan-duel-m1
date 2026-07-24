@@ -1,0 +1,156 @@
+/* style-3p.css — 3인 대국 화면. 디자인 토큰을 위에 모아 나중에 쉽게 손볼 수 있게. */
+
+:root {
+  /* ---- 테이블/색 (여기 값만 바꾸면 전체 톤 조정) ---- */
+  --felt-1: #234339; --felt-2: #142a24; --felt-3: #0d1c18;
+  --accent: #f2c94c; --ink: #e8e4d8; --muted: #9fb8ad; --warn: #f2994a;
+
+  /* ---- 카드(양피지) ---- */
+  --paper: #e2cf9f; --paper-edge: #9a7c4b; --card-ink: #2a2210; --band-ink: #f2ead3;
+  --card-w: 62px; --card-h: 88px; --card-radius: 6px;
+
+  /* ---- 장르 색 (표지 띠) ---- */
+  --g-mu: #9c5a1c; --g-sf: #1d7b8e; --g-fa: #66459f; --g-ro: #b23f76; --g-ho: #474d57;
+
+  /* ---- 종이 질감(순수 CSS, 외부 이미지 없음) ---- */
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.14'/%3E%3C/svg%3E");
+  --stain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.42 0 0 0 0 0.27 0 0 0 0 0.10 0 0 0 0.7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)' opacity='0.35'/%3E%3C/svg%3E");
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: "Noto Serif KR", "Noto Sans KR", system-ui, serif; background: #0b1613; color: var(--ink); }
+
+.table {
+  position: relative; width: 100vw; height: 100vh; min-height: 640px; overflow: hidden;
+  background: radial-gradient(ellipse at 50% 58%, var(--felt-1) 0%, var(--felt-2) 55%, var(--felt-3) 100%);
+}
+
+/* ---------- 점수판 ---------- */
+.scores { position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 16px; z-index: 6; }
+.sc { background: rgba(0,0,0,.35); border: 1px solid #3a5a4e; border-radius: 10px;
+  padding: 6px 14px; text-align: center; min-width: 96px; }
+.sc .nm { font-size: 12px; color: var(--muted); }
+.sc .pt { font-size: 20px; font-weight: 700; color: var(--accent); }
+.sc.turn { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.title { position: absolute; top: 14px; left: 18px; font-size: 12px; color: #7f9a8f; z-index: 6; }
+
+/* ---------- 카드 (양피지, 무광, 이미지 seam 포함) ---------- */
+.card {
+  --g: var(--g-mu);
+  position: relative; width: var(--card-w); height: var(--card-h);
+  border-radius: var(--card-radius); overflow: hidden;
+  background: var(--stain), var(--noise), var(--paper);
+  background-size: 300px 300px, 160px 160px, cover;
+  border: 1px solid var(--paper-edge);
+  box-shadow: 0 4px 8px rgba(0,0,0,.34);
+  color: var(--card-ink); display: flex; flex-direction: column; flex: 0 0 auto;
+}
+.card .band { background: var(--g); color: var(--band-ink); height: 26px;
+  display: flex; align-items: center; justify-content: center; letter-spacing: 2px;
+  font-size: 11px; font-weight: 700; z-index: 2; }
+.card .body { flex: 1; display: flex; align-items: center; justify-content: center; }
+.card .st { font-size: 30px; font-weight: 800; }
+/* 카드마다 텍스처 위치 달리 → 큰 종이 한 장에서 잘라낸 느낌 */
+.card:nth-child(3n+1) { background-position: 12px 46px, 24px 8px, 0 0; }
+.card:nth-child(3n+2) { background-position: 96px 20px, 70px 54px, 0 0; }
+.card:nth-child(3n+3) { background-position: 184px 104px, 118px 30px, 0 0; }
+
+/* --- 이미지 seam: card.img 있으면 .has-art 로 그림 표시 (지금은 미사용, 켜기만 하면 됨) --- */
+.card .art { position: absolute; inset: 0; background-size: cover; background-position: center;
+  background-repeat: no-repeat; z-index: 1; display: none; }
+.card.has-art .art { display: block; }
+.card.has-art .body .st { display: none; }
+.card.has-art .band { position: absolute; top: 0; left: 0; right: 0; opacity: .95; }
+.card .chip { display: none; position: absolute; bottom: 3px; left: 4px; z-index: 2;
+  background: rgba(0,0,0,.5); color: #fff; font-size: 12px; font-weight: 700; border-radius: 4px; padding: 0 5px; }
+.card.has-art .chip { display: block; }
+
+/* 장르별 색 */
+.card.mu { --g: var(--g-mu); } .card.sf { --g: var(--g-sf); } .card.fa { --g: var(--g-fa); }
+.card.ro { --g: var(--g-ro); } .card.ho { --g: var(--g-ho); }
+
+/* 크기 변형 */
+.card.big { width: var(--card-w); height: var(--card-h); }
+.card.sm { width: 36px; height: 50px; }
+.card.sm .band { height: 14px; font-size: 8px; letter-spacing: 1px; }
+.card.sm .st { font-size: 17px; }
+
+/* 선택/상호작용 */
+.hand.mine .card { cursor: pointer; transition: transform .1s; }
+.hand.mine .card:hover { transform: translateY(-5px); }
+.card.sel { outline: 2px solid var(--accent); outline-offset: 1px; transform: translateY(-9px); }
+.card.drawn::before { content: '뽑음'; position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  font-size: 9px; color: var(--accent); }
+
+/* 카드 뒷면 (양피지 + 인장) */
+.back { width: 32px; height: 46px; border-radius: 6px; border: 1px solid #8f7343; overflow: hidden;
+  background: var(--stain), var(--noise), #d0b787; background-size: 300px 300px, 160px 160px, cover;
+  box-shadow: 0 3px 6px rgba(0,0,0,.34); display: flex; align-items: center; justify-content: center;
+  color: #6f5631; font-size: 15px; }
+.back:nth-child(2n) { background-position: 60px 30px, 40px 12px, 0 0; }
+.back::after { content: '❦'; }
+
+/* ---------- 라이벌: 상단 대각선 코너 ---------- */
+.rival { position: absolute; top: 68px; width: 320px; z-index: 3; }
+.rival.tl { left: 26px; transform: rotate(-5deg); transform-origin: top left; }
+.rival.tr { right: 26px; transform: rotate(5deg); transform-origin: top right; }
+.rival .head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.rival.tr .head { flex-direction: row-reverse; }
+.avatar { width: 34px; height: 34px; border-radius: 50%; background: #2a4a3e; border: 1px solid #4c6f61;
+  display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.rival .name { font-size: 13px; font-weight: 600; }
+.rival .tag { font-size: 11px; color: var(--muted); }
+.rival .warn { font-size: 11px; color: var(--warn); font-weight: 600; }
+.rival .flash { font-size: 11px; color: var(--accent); font-weight: 700; }
+.hand.backs { display: flex; gap: 3px; }
+.rival.tr .hand.backs { justify-content: flex-end; }
+.disc { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; max-width: 260px; min-height: 20px; }
+.rival.tr .disc { justify-content: flex-end; margin-left: auto; }
+.disc-cap { font-size: 10px; color: #7f9a8f; margin: 9px 0 3px; }
+.rival.tr .disc-cap { text-align: right; }
+
+/* ---------- 중앙 산 ---------- */
+.center { position: absolute; top: 40%; left: 50%; transform: translate(-50%,-50%); text-align: center; z-index: 2; }
+.wall-pill { background: rgba(0,0,0,.4); border: 1px solid #3a5a4e; border-radius: 999px; padding: 10px 24px; font-size: 15px; }
+.wall-pill b { color: var(--accent); font-size: 20px; }
+.center .tools { margin-top: 8px; }
+.center .tools button { background: transparent; border: 1px solid #4c6f61; color: var(--muted);
+  border-radius: 6px; padding: 3px 10px; font-size: 11px; cursor: pointer; margin: 0 3px; }
+
+/* ---------- 왼쪽 맞출 수 있는 패 ---------- */
+.cond { position: absolute; left: 22px; top: 46%; width: 214px; background: rgba(0,0,0,.32);
+  border: 1px solid #3a5a4e; border-radius: 10px; padding: 10px 12px; z-index: 3; }
+.cond h4 { font-size: 12px; color: var(--accent); margin-bottom: 8px; }
+.cond .row { font-size: 12px; color: #cfe0d8; margin: 5px 0; }
+.cond .yk { display: inline-block; background: #20463a; border-radius: 6px; padding: 2px 7px; margin: 2px 2px 0 0; font-size: 11px; }
+
+/* ---------- 하단 중앙: 내 패 ---------- */
+.me-zone { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 0 18px; text-align: center; z-index: 4;
+  background: linear-gradient(0deg, rgba(0,0,0,.4), transparent); }
+.me-disc-cap { font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+.disc.mine { display: flex; gap: 5px; justify-content: center; margin-bottom: 12px; min-height: 20px; }
+.actbar { font-size: 13px; color: #cfe0d8; margin-bottom: 10px; min-height: 22px; }
+.actbar .btn { background: var(--accent); color: #1a2a24; border: none; border-radius: 8px; padding: 6px 18px;
+  font-weight: 700; margin: 0 4px; cursor: pointer; font-family: inherit; }
+.actbar .btn.ghost { background: transparent; color: #cfe0d8; border: 1px solid #4c6f61; }
+.actbar .btn:disabled { opacity: .4; cursor: default; }
+.hand.mine { display: flex; gap: 7px; justify-content: center; }
+.abil { margin-top: 12px; }
+.abil .a { display: inline-block; border: 1px solid #4c6f61; border-radius: 6px; padding: 4px 10px; margin: 0 3px;
+  font-size: 11px; color: var(--muted); background: transparent; cursor: pointer; font-family: inherit; }
+.abil .a:disabled { opacity: .4; }
+
+/* ---------- 결과/오버레이 ---------- */
+.overlay { position: absolute; inset: 0; background: rgba(6,12,10,.72); z-index: 20;
+  display: flex; align-items: center; justify-content: center; }
+.overlay.hidden { display: none; }
+.result { background: #16281f; border: 1px solid var(--accent); border-radius: 14px; padding: 26px 32px;
+  text-align: center; max-width: 460px; }
+.result h2 { color: var(--accent); font-size: 22px; margin-bottom: 6px; }
+.result .who { font-size: 14px; color: var(--muted); margin-bottom: 14px; }
+.result .hand-show { display: flex; gap: 6px; justify-content: center; margin: 14px 0; flex-wrap: wrap; }
+.result .yaku { font-size: 14px; margin: 4px 0; }
+.result .score { font-size: 30px; color: var(--accent); font-weight: 800; margin: 10px 0; }
+.result .btn { background: var(--accent); color: #1a2a24; border: none; border-radius: 8px;
+  padding: 8px 22px; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 8px; }

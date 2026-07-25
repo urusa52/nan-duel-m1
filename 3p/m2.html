@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미완의 서고 — 입문 배틀 (샘플)</title>
+<link rel="stylesheet" href="./css/style-3p.css?v=1">
+<style>
+  body { margin:0; }
+  .m2 { position:relative; width:100vw; min-height:100vh; padding:22px 18px 0;
+    background: radial-gradient(ellipse at 50% 42%, #234339, #142a24 60%, #0d1c18); color:#e8e4d8;
+    font-family:"Noto Serif KR","Noto Sans KR",system-ui,serif; display:flex; flex-direction:column; align-items:center; }
+  .title { font-size:13px; color:#7f9a8f; align-self:flex-start; margin-bottom:10px; }
+
+  /* 보스 */
+  #boss { display:flex; align-items:center; gap:12px; background:rgba(0,0,0,.34); border:1px solid #5a3a3a;
+    border-radius:12px; padding:12px 18px; min-width:420px; }
+  .b-av { width:46px; height:46px; border-radius:50%; background:#3a2530; border:1px solid #6f4c5c;
+    display:flex; align-items:center; justify-content:center; font-size:22px; }
+  .b-name { font-size:16px; font-weight:700; }
+  .b-tag { font-size:11px; color:#c99; }
+  .b-intent { font-size:12px; color:#f2994a; margin-top:3px; }
+  .b-genre { margin-left:auto; color:#fff; font-weight:700; font-size:12px; border-radius:6px; padding:3px 9px; }
+  .b-genre.mu{background:#9c5a1c;} .b-genre.sf{background:#1d7b8e;} .b-genre.fa{background:#66459f;}
+  .b-genre.ro{background:#b23f76;} .b-genre.ho{background:#474d57;}
+
+  /* 망각 게이지 + 책 */
+  .mid { margin:18px 0 6px; width:460px; }
+  .gauge-label { display:flex; justify-content:space-between; font-size:12px; color:#cfe0d8; margin-bottom:4px; }
+  #forget-label { color:#f28a8a; }
+  .gauge { height:16px; background:rgba(0,0,0,.4); border:1px solid #5a3a3a; border-radius:999px; overflow:hidden; }
+  #forget-fill { height:100%; width:10%;
+    background:linear-gradient(90deg,#8a3a3a,#e05555); transition:width .25s; }
+  #book { display:flex; gap:8px; justify-content:center; margin-top:14px; }
+  .chap { width:26px; height:36px; border-radius:4px; border:1px dashed #4c6f61; background:rgba(255,255,255,.03); }
+  .chap.done { border:1px solid #f2c94c; background:linear-gradient(180deg,#e2cf9f,#c6aa74); box-shadow:0 0 8px rgba(242,201,76,.4); }
+  #book-label { text-align:center; font-size:12px; color:#9fb8ad; margin-top:6px; }
+
+  /* 하단: 손패 */
+  .bottom { margin-top:auto; width:100%; display:flex; flex-direction:column; align-items:center;
+    padding:16px 0 22px; background:linear-gradient(0deg, rgba(0,0,0,.4), transparent); }
+  #hint { font-size:13px; color:#cfe0d8; margin-bottom:10px; min-height:20px; text-align:center; }
+  #acts { margin-bottom:12px; }
+  .btn { background:#f2c94c; color:#1a2a24; border:none; border-radius:8px; padding:7px 20px; font-weight:700;
+    cursor:pointer; font-family:inherit; margin:0 4px; }
+  .btn.ghost { background:transparent; color:#cfe0d8; border:1px solid #4c6f61; }
+  .btn:disabled { opacity:.4; cursor:default; }
+  #hand { display:flex; gap:7px; justify-content:center; flex-wrap:wrap; }
+  #hand .card { cursor:pointer; transition:transform .1s; }
+  #hand .card:hover { transform:translateY(-5px); }
+  .card.locked { filter:grayscale(.7) brightness(.65); cursor:default; }
+  .card.locked::after { content:attr(data-lock); position:absolute; inset:0; display:flex; align-items:center;
+    justify-content:center; font-size:20px; z-index:3; }
+</style>
+</head>
+<body>
+<div class="m2">
+  <div class="title">미완의 서고 — 입문 배틀 (샘플 스테이지)</div>
+  <div id="boss"></div>
+
+  <div class="mid">
+    <div class="gauge-label"><span>이야기의 생명</span><span id="forget-label">망각 0/100</span></div>
+    <div class="gauge"><div id="forget-fill"></div></div>
+    <div id="book"></div>
+    <div id="book-label"></div>
+  </div>
+
+  <div class="bottom">
+    <p id="hint"></p>
+    <div id="acts"></div>
+    <div id="hand"></div>
+  </div>
+
+  <div id="overlay" class="overlay hidden"></div>
+</div>
+<script type="module" src="./src/main-m2.js?v=1"></script>
+</body>
+</html>

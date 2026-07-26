@@ -53,46 +53,86 @@
   .card.locked { filter:grayscale(.7) brightness(.65); cursor:default; }
   .card.locked::after { content:attr(data-lock); position:absolute; inset:0; display:flex; align-items:center;
     justify-content:center; font-size:20px; z-index:3; }
-  /* 살아있는 배경 (연필 · 애니메이션) — '압도' 톤 */
+  /* ===== 무대(스테이지) 구성 =====
+     원경: 흐릿한 심연(분위기) → 중경: 거대한 보스(주역) → 근경: 작가의 책상(플레이어).
+     보스와 플레이어를 '마주 선 두 존재'로 배치하는 게 이 화면의 핵심 구도. */
   .bglayer{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:#0a0d0c}
-  /* 배경이 주인공: 크게·밝게 잡고, 가독성은 아래 scrim(패널 뒤 어둠)이 책임진다 */
-  .bg{position:absolute;inset:-10%;background:url('./assets/bg_grim.png') center 42%/cover;
-    filter:url(#wob) brightness(.74) contrast(1.34) saturate(0);opacity:.92;
-    animation:drift 34s ease-in-out infinite alternate}
-  @keyframes drift{0%{transform:scale(1.14) translate(0,0)}100%{transform:scale(1.26) translate(-3.5%,-2.2%)}}
-  /* 아주 느린 숨쉬기 — 살아있는 느낌 */
-  .breathe{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 44%, rgba(0,0,0,0), rgba(0,0,0,.5) 78%);
-    animation:breathe 11s ease-in-out infinite alternate}
-  @keyframes breathe{0%{opacity:.5}100%{opacity:1}}
+
+  /* 원경 — 같은 그림을 흐리게 깔아 깊이만 담당(선명한 보스와 이중으로 겹치지 않게 blur) */
+  .bg{position:absolute;inset:-6%;background:url('./assets/bg_grim.png') center/cover;
+    filter:blur(8px) brightness(.42) contrast(1.05);opacity:.38;
+    animation:drift 30s ease-in-out infinite alternate}
+  @keyframes drift{0%{transform:scale(1.05) translate(0,0)}100%{transform:scale(1.12) translate(-2.5%,-1.5%)}}
+
+  /* 중경 — 보스 본체. 무대의 주역. 아주 느리게 숨쉬듯 굽어본다.
+     평상시엔 SVG 왜곡 필터를 걸지 않는다(큰 면적에서 격자 아티팩트가 생김).
+     왜곡은 '검열' 순간에만 잠깐 — 그때는 오히려 현실이 일그러지는 연출이 된다. */
+  .boss-figure{position:absolute;left:50%;top:20%;width:min(1120px,92vw);aspect-ratio:1380/944;
+    background:url('./assets/boss_big.png') center top/contain no-repeat;
+    filter:brightness(.74) contrast(1.34);opacity:.9;
+    transform:translateX(-50%);animation:loom 26s ease-in-out infinite alternate}
+  @keyframes loom{
+    0%{transform:translateX(-50%) scale(1) translateY(0)}
+    100%{transform:translateX(-50%) scale(1.05) translateY(-1.2%)}}
+  /* 검열(보스의 딴지) 순간 — 한 번 크게 다가온다 */
+  .bglayer.rage .boss-figure{animation:rage .7s ease-out}
+  @keyframes rage{
+    0%{transform:translateX(-50%) scale(1);filter:brightness(.74) contrast(1.34)}
+    22%{transform:translateX(-50%) scale(1.11) translateY(1.4%);filter:url(#wob) brightness(1.1) contrast(1.5)}
+    100%{transform:translateX(-50%) scale(1);filter:brightness(.74) contrast(1.34)}}
+
   .fog{position:absolute;inset:-25%;background:
-    radial-gradient(circle at 28% 62%, rgba(200,220,220,.07), transparent 42%),
-    radial-gradient(circle at 72% 40%, rgba(200,220,220,.06), transparent 46%);
+    radial-gradient(circle at 28% 62%, rgba(200,220,220,.05), transparent 42%),
+    radial-gradient(circle at 72% 40%, rgba(200,220,220,.04), transparent 46%);
     animation:fog 22s linear infinite}
   @keyframes fog{0%{transform:translate(0,0)}100%{transform:translate(6%,-4%)}}
-  /* 비네트만 — 중앙은 열어둬서 그림이 그대로 보이게 */
-  .tint{position:absolute;inset:0;background:
-    radial-gradient(ellipse at 50% 40%, transparent 46%, rgba(6,10,9,.72) 100%),
-    linear-gradient(180deg, rgba(6,10,9,.58), transparent 24%, transparent 56%, rgba(6,10,9,.8))}
+  .tint{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 38%, transparent 34%, rgba(6,10,9,.82))}
   .flash{position:absolute;inset:0;background:#dfeaff;opacity:0;mix-blend-mode:screen;animation:flash 9s linear infinite}
   @keyframes flash{0%,90%,100%{opacity:0}91%{opacity:.4}92%{opacity:.05}93%{opacity:.3}95%{opacity:0}}
+
+  /* 근경 — 플레이어(작가). 거대한 보스와 마주 선 '작은 존재'.
+     .player 박스(400x365) 하나가 좌표계를 쥐고, 그 안의 요소는 % 로만 배치한다.
+     → 작가 그림을 갈아끼워도 .player 의 위치/크기만 만지면 된다. */
+  .deskline{position:absolute;left:0;right:0;bottom:0;height:58px;background:#080c0b;
+    box-shadow:0 -8px 22px rgba(0,0,0,.65)}
+  .player{position:absolute;left:7%;bottom:0;width:400px;height:365px;pointer-events:none}
+  .writer{position:absolute;inset:0;
+    background:url('./assets/player_back.png') center bottom/contain no-repeat}
+  /* 촛불 심지는 작가 그림(460x420) 좌표 (80,286) — 박스 기준 17.4% / 하단 32% */
+  .candle{position:absolute;left:17.4%;bottom:32%;width:52px;height:70px;transform:translateX(-50%);
+    background:url('./assets/candle_flame.png') center/contain no-repeat;
+    animation:flicker 2.6s ease-in-out infinite}
+  .candle-glow{position:absolute;left:calc(7% + 70px);bottom:-40px;width:620px;height:480px;
+    transform:translateX(-50%);
+    background:radial-gradient(ellipse at 50% 55%, rgba(255,190,110,.22), rgba(255,170,90,.07) 44%, transparent 70%)}
+  @keyframes flicker{0%,100%{opacity:.92;transform:translateX(-50%) scaleY(1)}
+    45%{opacity:.7;transform:translateX(-50%) scaleY(.94)}
+    70%{opacity:1;transform:translateX(-50%) scaleY(1.04)}}
+  /* 발표(완성) 순간 — 촛불이 확 타오른다 */
+  .bglayer.publish .candle-glow{animation:flare .9s ease-out}
+  @keyframes flare{0%{opacity:.5}18%{opacity:1;filter:brightness(2)}100%{opacity:.5;filter:none}}
+
   .m2>.title,.m2>#boss,.m2>.mid,.m2>.bottom{position:relative;z-index:1}
   /* 결과창은 화면 전체를 덮어야 하므로 absolute 유지 (relative로 덮어쓰면 아래로 밀려남) */
   .m2>#overlay{position:absolute;inset:0;z-index:20}
-
-  /* --- scrim: 배경을 세게 올린 만큼, UI 뒤에만 어둠을 깔아 가독성 확보 --- */
-  #boss{background:rgba(8,12,11,.62);backdrop-filter:blur(3px);box-shadow:0 6px 26px rgba(0,0,0,.5)}
-  .mid{background:rgba(8,12,11,.52);backdrop-filter:blur(3px);border-radius:12px;padding:12px 16px 14px;
-    box-shadow:0 6px 22px rgba(0,0,0,.45)}
-  .bottom{background:linear-gradient(0deg, rgba(5,9,8,.9) 55%, rgba(5,9,8,.6) 80%, transparent);
-    backdrop-filter:blur(2px)}
+  /* UI 뒤에만 옅은 어둠 — 그림은 살리고 글자는 읽히게 */
+  #boss{background:rgba(8,12,11,.58);backdrop-filter:blur(3px);box-shadow:0 6px 24px rgba(0,0,0,.5)}
+  .mid{background:rgba(8,12,11,.46);backdrop-filter:blur(3px);border-radius:12px;padding:12px 16px 14px}
   .title{text-shadow:0 1px 4px #000}
   #hint{text-shadow:0 1px 5px #000}
 </style>
 </head>
 <body>
 <div class="m2">
-  <div class="bglayer">
-    <div class="bg"></div><div class="fog"></div><div class="breathe"></div><div class="tint"></div><div class="flash"></div>
+  <div class="bglayer" id="bglayer">
+    <div class="bg"></div>
+    <div class="boss-figure"></div>
+    <div class="fog"></div>
+    <div class="tint"></div>
+    <div class="candle-glow"></div>
+    <div class="deskline"></div>
+    <div class="player"><div class="writer"></div><div class="candle"></div></div>
+    <div class="flash"></div>
   </div>
   <svg width="0" height="0" style="position:absolute"><filter id="wob" x="-8%" y="-8%" width="116%" height="116%">
     <feTurbulence type="fractalNoise" baseFrequency="0.004 0.007" numOctaves="2" seed="4" result="n">
@@ -118,6 +158,17 @@
 
   <div id="overlay" class="overlay hidden"></div>
 </div>
-<script type="module" src="./src/main-m2.js?v=3"></script>
+<!-- 시작 화면으로 — 게임 로직과 무관한 독립 링크. 아래 두 덩어리를 지우면 흔적 없이 사라진다. -->
+<style>
+  .home-link{position:fixed;left:10px;bottom:8px;z-index:60;
+    font:11px/1 "Noto Serif KR","Noto Sans KR",system-ui,serif;
+    color:#8fa79c;text-decoration:none;background:rgba(6,12,10,.62);
+    border:1px solid #3a5a4e;border-radius:999px;padding:6px 12px;
+    opacity:.7;transition:opacity .15s,color .15s}
+  .home-link:hover,.home-link:focus-visible{opacity:1;color:#f2c94c}
+</style>
+<a class="home-link" href="../index.html">← 처음으로</a>
+
+<script type="module" src="./src/main-m2.js?v=5"></script>
 </body>
 </html>

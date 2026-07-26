@@ -7,6 +7,12 @@ import { makeCardMap, classifySet } from './logic/handEval.js';
 import { cardEl, makeGenreName } from './render/cards3p.js';
 
 const $ = (s) => document.querySelector(s);
+// 무대 연출 훅: 배경 레이어에 클래스를 잠깐 붙였다 뗀다(로직과 분리 — 없어도 게임은 돈다).
+function fx(name) {
+  const bl = document.getElementById('bglayer'); if (!bl) return;
+  bl.classList.remove(name); void bl.offsetWidth; bl.classList.add(name);
+  setTimeout(() => bl.classList.remove(name), 1000);
+}
 const el = (t, c, h) => { const e = document.createElement(t); if (c) e.className = c; if (h != null) e.innerHTML = h; return e; };
 
 // ---- 튜닝 값 (샘플) ----
@@ -70,6 +76,7 @@ function doPublish(idx, genre) {
   for (let k = 0; k < 3 && S.wall.length; k++) S.hand.push(drawCard());
   sortHand();
   S.sel.clear();
+  fx('publish'); // 촛불이 확 타오르는 연출
   const tag = m === 'win' ? ' (상성 강타! 딴지 씻김)' : m === 'lose' ? ' (상성 약함…)' : '';
   S.flash = `${genreName(genre)} 이야기 완성 — 망각 −${push}${tag}`;
   if (S.book >= CFG.need) { S.phase = 'won'; render(); return; }
@@ -96,6 +103,8 @@ function endTurn() {
       const t = free[(S.turn * 13) % free.length]; // 결정적(테스트 안정)
       S.hand[t].lock = CFG.boss.lockTurns;
       S.flash = `✂ ${CFG.boss.name}이(가) 당신의 원고를 검열했다! (카드 잠김)`;
+      fx('rage'); // 보스가 한 번 굽어보며 다가온다
+
     }
   }
   if (S.forget >= CFG.forgetMax) S.phase = 'lost';

@@ -51,6 +51,17 @@
   <div id="overlay" class="overlay hidden"></div>
 </div>
 
+<!-- 시작 화면으로 — 게임 로직과 무관한 독립 링크. 아래 두 덩어리를 지우면 흔적 없이 사라진다. -->
+<style>
+  .home-link{position:fixed;left:10px;bottom:8px;z-index:60;
+    font:11px/1 "Noto Serif KR","Noto Sans KR",system-ui,serif;
+    color:#8fa79c;text-decoration:none;background:rgba(6,12,10,.62);
+    border:1px solid #3a5a4e;border-radius:999px;padding:6px 12px;
+    opacity:.7;transition:opacity .15s,color .15s}
+  .home-link:hover,.home-link:focus-visible{opacity:1;color:#f2c94c}
+</style>
+<a class="home-link" href="../index.html">← 처음으로</a>
+
 <script type="module" src="./src/main3p.js?v=1"></script>
 </body>
 </html>

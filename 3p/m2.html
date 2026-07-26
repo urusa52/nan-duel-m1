@@ -17,6 +17,8 @@
     border-radius:12px; padding:12px 18px; min-width:420px; }
   .b-av { width:46px; height:46px; border-radius:50%; background:#3a2530; border:1px solid #6f4c5c;
     display:flex; align-items:center; justify-content:center; font-size:22px; }
+  .b-portrait { width:84px; height:112px; border-radius:8px; border:1px solid #6f4c5c; flex:0 0 auto;
+    background-size:cover; background-position:center top; box-shadow:0 3px 10px rgba(0,0,0,.55); }
   .b-name { font-size:16px; font-weight:700; }
   .b-tag { font-size:11px; color:#c99; }
   .b-intent { font-size:12px; color:#f2994a; margin-top:3px; }
@@ -51,10 +53,53 @@
   .card.locked { filter:grayscale(.7) brightness(.65); cursor:default; }
   .card.locked::after { content:attr(data-lock); position:absolute; inset:0; display:flex; align-items:center;
     justify-content:center; font-size:20px; z-index:3; }
+  /* 살아있는 배경 (연필 · 애니메이션) — '압도' 톤 */
+  .bglayer{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:#0a0d0c}
+  /* 배경이 주인공: 크게·밝게 잡고, 가독성은 아래 scrim(패널 뒤 어둠)이 책임진다 */
+  .bg{position:absolute;inset:-10%;background:url('./assets/bg_grim.png') center 42%/cover;
+    filter:url(#wob) brightness(.74) contrast(1.34) saturate(0);opacity:.92;
+    animation:drift 34s ease-in-out infinite alternate}
+  @keyframes drift{0%{transform:scale(1.14) translate(0,0)}100%{transform:scale(1.26) translate(-3.5%,-2.2%)}}
+  /* 아주 느린 숨쉬기 — 살아있는 느낌 */
+  .breathe{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 44%, rgba(0,0,0,0), rgba(0,0,0,.5) 78%);
+    animation:breathe 11s ease-in-out infinite alternate}
+  @keyframes breathe{0%{opacity:.5}100%{opacity:1}}
+  .fog{position:absolute;inset:-25%;background:
+    radial-gradient(circle at 28% 62%, rgba(200,220,220,.07), transparent 42%),
+    radial-gradient(circle at 72% 40%, rgba(200,220,220,.06), transparent 46%);
+    animation:fog 22s linear infinite}
+  @keyframes fog{0%{transform:translate(0,0)}100%{transform:translate(6%,-4%)}}
+  /* 비네트만 — 중앙은 열어둬서 그림이 그대로 보이게 */
+  .tint{position:absolute;inset:0;background:
+    radial-gradient(ellipse at 50% 40%, transparent 46%, rgba(6,10,9,.72) 100%),
+    linear-gradient(180deg, rgba(6,10,9,.58), transparent 24%, transparent 56%, rgba(6,10,9,.8))}
+  .flash{position:absolute;inset:0;background:#dfeaff;opacity:0;mix-blend-mode:screen;animation:flash 9s linear infinite}
+  @keyframes flash{0%,90%,100%{opacity:0}91%{opacity:.4}92%{opacity:.05}93%{opacity:.3}95%{opacity:0}}
+  .m2>.title,.m2>#boss,.m2>.mid,.m2>.bottom{position:relative;z-index:1}
+  /* 결과창은 화면 전체를 덮어야 하므로 absolute 유지 (relative로 덮어쓰면 아래로 밀려남) */
+  .m2>#overlay{position:absolute;inset:0;z-index:20}
+
+  /* --- scrim: 배경을 세게 올린 만큼, UI 뒤에만 어둠을 깔아 가독성 확보 --- */
+  #boss{background:rgba(8,12,11,.62);backdrop-filter:blur(3px);box-shadow:0 6px 26px rgba(0,0,0,.5)}
+  .mid{background:rgba(8,12,11,.52);backdrop-filter:blur(3px);border-radius:12px;padding:12px 16px 14px;
+    box-shadow:0 6px 22px rgba(0,0,0,.45)}
+  .bottom{background:linear-gradient(0deg, rgba(5,9,8,.9) 55%, rgba(5,9,8,.6) 80%, transparent);
+    backdrop-filter:blur(2px)}
+  .title{text-shadow:0 1px 4px #000}
+  #hint{text-shadow:0 1px 5px #000}
 </style>
 </head>
 <body>
 <div class="m2">
+  <div class="bglayer">
+    <div class="bg"></div><div class="fog"></div><div class="breathe"></div><div class="tint"></div><div class="flash"></div>
+  </div>
+  <svg width="0" height="0" style="position:absolute"><filter id="wob" x="-8%" y="-8%" width="116%" height="116%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.004 0.007" numOctaves="2" seed="4" result="n">
+      <animate attributeName="baseFrequency" dur="15s" values="0.004 0.007;0.006 0.009;0.004 0.007" repeatCount="indefinite"/>
+    </feTurbulence>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="12" xChannelSelector="R" yChannelSelector="G"/>
+  </filter></svg>
   <div class="title">미완의 서고 — 입문 배틀 (샘플 스테이지)</div>
   <div id="boss"></div>
 
@@ -73,6 +118,6 @@
 
   <div id="overlay" class="overlay hidden"></div>
 </div>
-<script type="module" src="./src/main-m2.js?v=1"></script>
+<script type="module" src="./src/main-m2.js?v=3"></script>
 </body>
 </html>

@@ -13,7 +13,7 @@ const el = (t, c, h) => { const e = document.createElement(t); if (c) e.classNam
 const CFG = {
   hand: 10, need: 3, forgetMax: 100, forgetStart: 5, forgetPerTurn: 8,
   pushback: { win: 50, normal: 35, lose: 18 },     // 상성별 망각 되밀기
-  boss: { genre: 'ho', name: '공포를 삼킨 자 그림', tag: '호러 작가', avatar: '🕯', censorEvery: 3, lockTurns: 2 },
+  boss: { genre: 'ho', name: '공포를 삼킨 자 그림', tag: '호러 작가', avatar: '🕯', img: './assets/boss_grim.png', censorEvery: 3, lockTurns: 2 },
   beats: { mu: 'sf', sf: 'fa', fa: 'ro', ro: 'ho', ho: 'mu' }, // A▶B = A가 B를 이김 (오각형)
   rules: { allowCrossGenreRun: false, allowGenreTriplet: false },
 };
@@ -33,10 +33,14 @@ async function boot() {
 function reset() {
   S.wall = shuffle(buildWall(allIds, 3), makeRng((Math.random() * 1e9) | 0));
   S.hand = []; for (let i = 0; i < CFG.hand; i++) S.hand.push(drawCard());
+  sortHand();
   S.sel = new Set(); S.book = 0; S.forget = CFG.forgetStart; S.turn = 0; S.phase = 'play'; S.flash = '이야기를 완성해 한 권을 채우세요. 망각이 다 차기 전에!';
   render();
 }
 function drawCard() { const id = S.wall.pop(); return { id, lock: 0 }; }
+const GORDER = { mu: 0, sf: 1, fa: 2, ro: 3, ho: 4 };
+// 손패 자동 정렬 (장르→단계). 손패 구성이 바뀔 때(선택 비어있을 때)만 호출.
+function sortHand() { S.hand.sort((a, b) => { const ca = cardMap[a.id], cb = cardMap[b.id]; return (GORDER[ca.genre] - GORDER[cb.genre]) || (ca.stage - cb.stage); }); }
 
 // ---- 상성 ----
 function matchup(myGenre) {
@@ -64,6 +68,7 @@ function doPublish(idx, genre) {
   const set = new Set(idx);
   S.hand = S.hand.filter((_, i) => !set.has(i));
   for (let k = 0; k < 3 && S.wall.length; k++) S.hand.push(drawCard());
+  sortHand();
   S.sel.clear();
   const tag = m === 'win' ? ' (상성 강타! 딴지 씻김)' : m === 'lose' ? ' (상성 약함…)' : '';
   S.flash = `${genreName(genre)} 이야기 완성 — 망각 −${push}${tag}`;
@@ -75,6 +80,7 @@ function doTrade(idx) {
   const n = idx.length;
   S.hand = S.hand.filter((_, i) => !set.has(i));
   for (let k = 0; k < n && S.wall.length; k++) S.hand.push(drawCard());
+  sortHand();
   S.sel.clear();
   S.flash = `${n}장 교체 — 한 턴이 흘러 망각이 스몄다`;
   endTurn();
@@ -100,8 +106,11 @@ function endTurn() {
 function render() {
   // 보스
   const untilCensor = CFG.boss.censorEvery - (S.turn % CFG.boss.censorEvery);
+  const av = CFG.boss.img
+    ? `<div class="b-portrait" style="background-image:url('${CFG.boss.img}')"></div>`
+    : `<div class="b-av">${CFG.boss.avatar}</div>`;
   $('#boss').innerHTML =
-    `<div class="b-av">${CFG.boss.avatar}</div>`
+    av
     + `<div><div class="b-name">${CFG.boss.name}</div><div class="b-tag">${CFG.boss.tag}</div>`
     + `<div class="b-intent">✂ ${untilCensor}턴 후 검열</div></div>`
     + `<div class="b-genre ${CFG.boss.genre}">${genreName(CFG.boss.genre)}</div>`;
